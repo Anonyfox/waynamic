@@ -4,7 +4,7 @@
 [AngularJS](http://angularjs.org) + [Brunch](http://brunch.io)
 
 #### ** MAJOR UPDATES **
-v0.4.0 Bring with it some major changes. If you're upgrading from a previous release, 
+v0.4.0 Bring with it some major changes. If you're upgrading from a previous release,
 please run `./scripts/init.sh` and remove any bower components from `vendor`. Bower
 now uses the `bower_components` directory.
 
@@ -19,22 +19,22 @@ Features:
 
 ## Alternate Versions
 
-- [Livescript](https://github.com/clkao/angular-brunch-seed-livescript) 
-  by [@clkao](https://github.com/clkao) - Uses [Livescript](http://livescript.net/) 
+- [Livescript](https://github.com/clkao/angular-brunch-seed-livescript)
+  by [@clkao](https://github.com/clkao) - Uses [Livescript](http://livescript.net/)
   instead of [Coffeescript](http://coffeescript.org/)
-- [True North](https://github.com/scoarescoare/angular-brunch-true-north) 
-  by [@scoarescoare](https://github.com/scoarescoare) - Uses [SASS](http://sass-lang.com/) 
+- [True North](https://github.com/scoarescoare/angular-brunch-true-north)
+  by [@scoarescoare](https://github.com/scoarescoare) - Uses [SASS](http://sass-lang.com/)
   instead of [LESS](http://lesscss.org/)
-- [brunch-on-asteroids](https://github.com/exlee/brunch-on-asteroids) 
+- [brunch-on-asteroids](https://github.com/exlee/brunch-on-asteroids)
   by [@exlee](https://github.com/exlee) - A minimalistic version that adds Generators,
   Bootswatch themes, D3, and more.
-- [angular-brunch-seed-modularized](https://github.com/sanfordredlich/angular-brunch-seed-modularized) 
+- [angular-brunch-seed-modularized](https://github.com/sanfordredlich/angular-brunch-seed-modularized)
   by [@sanfordredlich](https://github.com/sanfordredlich) - Demonstrates a modular
   design, consistent with best practices and better suited for larger projects
 
 ## How to use angular-brunch-seed
 
-* `git clone https://github.com/scotch/angular-brunch-seed.git` to clone 
+* `git clone https://github.com/scotch/angular-brunch-seed.git` to clone
   the **angular-brunch-seed** repository
 * `cd angular-brunch-seed`
 * `./scripts/init.sh` to install node packages
@@ -67,7 +67,7 @@ Upon save the Jade files will be recompiled to HTML and added to the
 `partial/` and end with `.html`. For example the `app/partials/nav.jade` would
 be referenced in the Angular javascript code as 'partials/nav.html'.
 
-*NOTE:* Behind the scenes Angular-brunch-seed uses 
+*NOTE:* Behind the scenes Angular-brunch-seed uses
 [jade-angular-brunch](https://github.com/GulinSS/jade-angularjs-brunch)
 to compile and serve partials.
 [jade-angular-brunch](https://github.com/GulinSS/jade-angularjs-brunch)
@@ -76,7 +76,7 @@ string of the partials to the `$templateCache`. For this to work you must add
 `partials` to yours apps required modules list and include the `partials.js`
 file in your `index.html` file.
 
-If you are interested in the compiled HTML view the contents 
+If you are interested in the compiled HTML view the contents
 of the `_public/js/partials.js` file.
 
 ### Using html
@@ -106,7 +106,7 @@ some where around 20 seconds is normal.
 
 * `./scripts/production.sh` to minify javascript and css files.
 
-Please be aware of the caveats regarding Angular JS and minification, 
+Please be aware of the caveats regarding Angular JS and minification,
 take a look at [Dependency Injection](http://docs.angularjs.org/guide/di)
 for information.
 
@@ -135,7 +135,7 @@ Notes:
 
 ### Common issues
 
-Initial load does not render correctly; scripts are not loading. 
+Initial load does not render correctly; scripts are not loading.
 - Occasionally the scripts will not load properly on the initial load. If this
   occurs, refresh the page. Subsequent refresh will render correctly.
 
@@ -173,7 +173,7 @@ git pull origin master
       partials/               --> Jade partial files. This file will be converted to HTML upon save.
         nav.jade                  If you are using HTML this directory will not be present. You will find the template file
         partial1.jade             in the `app/assets/partials` directory instead.
-        partial2.jade             If you are using Jade these file will be converted to HTML and compiled into 
+        partial2.jade             If you are using Jade these file will be converted to HTML and compiled into
                                   `_public/js/partials.js` upon save.
       scripts/                --> base directory for app scripts
         controllers.js        --> application controllers
@@ -185,7 +185,7 @@ git pull origin master
                                   less, and stylus
         _override.less        --> styles that should be loaded after bootstrap.
         _variables.less       --> bootstrap variables to be used during the compilation process
-                              --> **NOTE the underscore (_). Files begining with an underscore 
+                              --> **NOTE the underscore (_). Files begining with an underscore
                                   will not automatically be compiled, they must be imported.
         app.less              --> a file for importing styles.
       app.coffee              --> application definition and routes.
@@ -193,7 +193,7 @@ git pull origin master
       init.coffee             --> application bootstrap
 
     bower_components/         --> The bower_components dirctory is populated by Bower.
-                                  It contains  Angular, Bootstrap Font-Awesome 
+                                  It contains  Angular, Bootstrap Font-Awesome
                                   and other utility files.
     node_modules              --> NodeJS modules
 

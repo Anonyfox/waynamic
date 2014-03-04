@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "main": "server.coffee",
+  "author": "",
+  "license": "BSD-2-Clause",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "tester": "./node_modules/mocha/bin/mocha --watch --growl"
+  },
+  "dependencies": {
+    "express": "~3.4.8",
+    "coffee-script": "~1.7.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "chai": "~1.9.0"
+  }
+}

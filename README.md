@@ -13,3 +13,6 @@ some descriptions here...
 * empfohlen: `npm install nodemon -g`, `npm install growl -g`
 * `npm install` im /backend Ordner
 * starten im /backend Ordner mit `nodemon backend.coffee`
+
+##neo4j
+* todo

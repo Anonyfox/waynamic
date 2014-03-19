@@ -1,0 +1,11 @@
+{
+  "create": {
+    "users": 777,
+    "userConnectivity": 0.5,
+    "contents": 500,
+    "contentComplexity": 0.3
+  },
+  "clear": {
+
+  }
+}

@@ -9,14 +9,16 @@
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
     "tester": "./node_modules/mocha/bin/mocha --watch --growl",
-    "db:create": "./node_modules/.bin/coffee ./commands/create.coffee"
+    "db:create": "./node_modules/.bin/coffee ./commands/create.coffee",
+    "db:clear": "./node_modules/.bin/coffee ./commands/clear.coffee"
   },
   "dependencies": {
     "express": "~3.4.8",
     "coffee-script": "~1.7.1",
     "neo4j": "~1.1.0",
     "cypher-query": "0.0.11",
-    "underscore": "~1.6.0"
+    "underscore": "~1.6.0",
+    "async": "~0.2.10"
   },
   "devDependencies": {
     "mocha": "~1.17.1",

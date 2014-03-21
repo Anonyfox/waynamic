@@ -1,0 +1,8 @@
+Quellen um Content initial zu bekommen, jede dieser Contentquellen sollte ein einzelner Express-Microservice sein, der die API kapselt. 
+
+videos          -> youtube:     https://github.com/MaxGfeller/youtube-search
+bilder          -> flickr:      https://github.com/Pomax/node-flickrapi
+places          -> Yelp!:       https://github.com/olalonde/node-yelp
+places+bilder   -> Instagram:   https://github.com/mckelvey/instagram-node-lib
+musik           -> itunes:      https://github.com/connor/itunes-node  -oder-  https://github.com/fvdm/nodejs-searchitunes
+filme           -> IMDB:        http://www.omdbapi.com/  -->  https://github.com/worr/node-imdb-api

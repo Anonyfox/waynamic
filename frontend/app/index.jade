@@ -23,23 +23,16 @@ html(lang='en', ng-app='app')
     script(src='/js/app.js')
   body(ng-controller='AppCtrl')
     .wrapper
-      .navbar.navbar-static-top
+      .navbar.navbar-static-top.navbar-inverse
         .navbar-inner
           .container
             button.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
               span.icon-bar
               span.icon-bar
               span.icon-bar
-            a(href='/').brand Angular Brunch Seed
+            a(href='/').brand Waynamic
             .nav-collapse
               div(ng-include="'/partials/nav.html'")
       .container.main-content
         div(ng-view)
-        div Angular Brunch seed app: v<span app-version></span>
-      .push
-
-    footer.footer
-      .container
-        p
-          small
-            a(href='https://github.com/scotch/angular-brunch-seed') angular-brunch-seed | source
+        

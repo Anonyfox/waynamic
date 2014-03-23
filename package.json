@@ -1,0 +1,29 @@
+{
+  "name": "waynamic",
+  "version": "0.0.0",
+  "description": "The Perfect Distraction Tool",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Anonyfox/waynamic.git"
+  },
+  "keywords": [
+    "social",
+    "media",
+    "facebook",
+    "twitter",
+    "recommendation",
+    "engine",
+    "distraction"
+  ],
+  "author": "Maximilian Stroh",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Anonyfox/waynamic/issues"
+  },
+  "dependencies": {
+    "coffee-script": "~1.7.1"
+  }
+}

@@ -20,12 +20,16 @@ App.config([
 
   $routeProvider
 
-    .when('/todo', {templateUrl: '/partials/todo.html'})
-    .when('/view1', {templateUrl: '/partials/partial1.html'})
-    .when('/view2', {templateUrl: '/partials/partial2.html'})
+    .when('/', {templateUrl: '/partials/landingpage.html'})
+    .when('/home', {templateUrl: '/partials/dashboard.html'})
+    .when('/profile', {templateUrl: '/partials/profile.html'})
+    .when('/import', {templateUrl: '/partials/import.html'})
+    .when('/register', {templateUrl: '/partials/register.html'})
+    .when('/login', {templateUrl: '/partials/login.html'})
+    .when('/logout', {templateUrl: '/partials/logout.html'})
 
     # Catch all
-    .otherwise({redirectTo: '/todo'})
+    .otherwise({redirectTo: '/'})
 
   # Without server side support html5 must be disabled.
   $locationProvider.html5Mode(false)

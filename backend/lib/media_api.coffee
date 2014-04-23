@@ -1,5 +1,6 @@
 MediaApi = exports? and exports or @MediaApi = {}
 
+
 MediaApi.Flickr = ->
   Flickr = {}
   flickr = new (require 'node-flickr') api_key: '0969ce0028fe08ecaf0ed5537b597f1e'
@@ -33,3 +34,12 @@ MediaApi.Flickr = ->
             return cb null, urls
 
   Flickr
+
+
+MediaApi.Youtube = ->
+  Youtube = {}
+  youtube = 'here be dragons'
+  count = 5
+  page = 1
+
+  Youtube

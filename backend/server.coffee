@@ -8,6 +8,7 @@ _ = require "underscore"
 
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr()
+Youtube = MediaApi.Youtube()
 
 ########################
 ### AUTHENTIFICATION ###
@@ -80,9 +81,11 @@ app.post "/register", (req, res) ->
           res.json sanitizeUser doc
 app.get "/test", (req, res) -> res.json req.user
 
-# query example:
-# http://localhost:4343/pictures?keywords=forest,beach
-app.get "/pictures", (req, res) ->
+
+# --- media api routes ---------------------------------------------------------
+
+# query:  http://localhost:4343/pictures?keywords=forest,beach
+app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or "default"
   console.log keywords
   keywords = keywords.split ',' unless keywords instanceof Array
@@ -90,6 +93,12 @@ app.get "/pictures", (req, res) ->
     return res.end err.message if err
     return res.json null unless urls instanceof Array
     res.json urls
+
+# query:  http://localhost:4343/videos?keywords=football
+app.get '/videos', (req, res) ->
+
+
+
 
 ####################
 ### START SERVER ###

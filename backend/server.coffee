@@ -80,10 +80,15 @@ app.post "/register", (req, res) ->
           res.json sanitizeUser doc
 app.get "/test", (req, res) -> res.json req.user
 
+# query example:
+# http://localhost:4343/pictures?keywords=forest,beach
 app.get "/pictures", (req, res) ->
-  keywords = req.params.keywords ? []
+  keywords = req.query.keywords or "default"
+  console.log keywords
+  keywords = keywords.split ',' unless keywords instanceof Array
   Flickr.find keywords, (err, urls) ->
-    unless urls instanceof Array then return res.json null
+    return res.end err.message if err
+    return res.json null unless urls instanceof Array
     res.json urls
 
 ####################

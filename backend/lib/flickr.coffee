@@ -1,3 +1,4 @@
+
 Flickr = exports? and exports or @Flickr = {}
 
 # Api = require 'flickrapi'

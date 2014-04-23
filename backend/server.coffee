@@ -6,6 +6,8 @@ NeDB = require "nedb"
 app = express()
 _ = require "underscore"
 
+Flickr = require('./lib/flickr')()
+
 ########################
 ### AUTHENTIFICATION ###
 ########################
@@ -33,7 +35,7 @@ app.configure ->
   app.enable 'trust proxy' # i am behind a nginx !
   app.use express.compress()
   app.use express.cookieParser()
-  app.use express.cookieSession({secret: "ThePerfectDistractionMachine", key: "nsa_tracking_cookie", cookie: {maxAge: 1000*60*60*24*365}}) 
+  app.use express.cookieSession({secret: "ThePerfectDistractionMachine", key: "nsa_tracking_cookie", cookie: {maxAge: 1000*60*60*24*365}})
   app.use passport.initialize()
   app.use passport.session()
   # app.set 'views', "#{__dirname}/views"
@@ -66,7 +68,7 @@ auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 40
 app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
 app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
 app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
-app.post "/register", (req, res) -> 
+app.post "/register", (req, res) ->
   userdb.findOne {name: req.body.username}, (err, doc) ->
     if err or doc
       err or= {error: "Username already exists!"}
@@ -76,6 +78,11 @@ app.post "/register", (req, res) ->
         req.login doc, (err) ->
           res.json sanitizeUser doc
 app.get "/test", (req, res) -> res.json req.user
+
+app.get "/pictures", (req, res) ->
+  urls = Flickr.find req.params.keywords
+  unless typeof urls is Array then return res.json null
+  res.json urls
 
 ####################
 ### START SERVER ###

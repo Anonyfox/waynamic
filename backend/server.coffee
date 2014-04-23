@@ -6,7 +6,8 @@ NeDB = require "nedb"
 app = express()
 _ = require "underscore"
 
-Flickr = require('./lib/flickr')()
+MediaApi = require './lib/media_api'
+Flickr = MediaApi.Flickr()
 
 ########################
 ### AUTHENTIFICATION ###
@@ -80,9 +81,10 @@ app.post "/register", (req, res) ->
 app.get "/test", (req, res) -> res.json req.user
 
 app.get "/pictures", (req, res) ->
-  urls = Flickr.find req.params.keywords
-  unless typeof urls is Array then return res.json null
-  res.json urls
+  keywords = req.params.keywords ? []
+  Flickr.find keywords, (err, urls) ->
+    unless urls instanceof Array then return res.json null
+    res.json urls
 
 ####################
 ### START SERVER ###

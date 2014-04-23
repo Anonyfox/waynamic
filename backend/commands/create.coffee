@@ -20,6 +20,9 @@ createUser = (fn) ->
 
 createSomeUsers = (n, fn) -> async.timesSeries n, ((iterator, next) -> createUser (err, user) -> next(err, user)), fn
 
+createPictures = (fn) ->
+  
+
 ### actual command ###
 Create.run = (userCount, userConnectivity) ->
   userCount ?= config.create.users

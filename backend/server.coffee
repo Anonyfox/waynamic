@@ -7,7 +7,7 @@ app = express()
 _ = require "underscore"
 
 MediaApi = require './lib/media_api'
-Flickr = MediaApi.Flickr()
+Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
 Youtube = MediaApi.Youtube()
 
 ########################

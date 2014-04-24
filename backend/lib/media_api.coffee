@@ -25,33 +25,23 @@ request = (url, parameters..., cb) ->
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
-  count = 9
-  page = 1
-  query = ''
+  limit = 9
 
   Flickr.set = (key, value) ->
     switch key
-      when 'count' then count = value
+      when 'limit' then limit = value
 
   Flickr.find = (keywords, cb) ->
-    page = 1
-    query = keywords.join ','
-    crawl cb
-
-  Flickr.findNext = (cb) ->
-    page += 1
-    crawl cb
-
-  crawl = (cb) ->
     return unless cb
-    get 'photos.search', per_page: count, page: page, tags: query, (err, result) ->
+    tags = keywords.join ','
+    get 'photos.search', per_page: limit, page: 1, tags: tags, (err, result) ->
       return cb err if err
       pictures = []
       for photo in result.photos.photo
         crawl_one photo.id, (err, picture) ->
           return cb err if err
           pictures.push picture
-          return cb null, pictures if pictures.length is count
+          return cb null, pictures if pictures.length is limit
 
   crawl_one = (id, cb) ->
     async.parallel
@@ -84,25 +74,14 @@ MediaApi.Flickr = (api_key) ->
 MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
   Youtube = {}
-  count = 9
-  start = 1
-  query = ''
+  limit = 9
 
   Youtube.set = (key, value) ->
     switch key
-      when 'count' then count = value
+      when 'limit' then limit = value
 
-  Youtube.find = (searchstring, cb) ->
-    start = 1
-    query = searchstring
-    crawl cb
-
-  Youtube.findNext = (cb) ->
-    start += count
-    crawl cb
-
-  crawl = (cb) ->
-    youtubeSearch.search query, {maxResults:count, startIndex:start}, (err, results) ->
+  Youtube.find = (query, cb) ->
+    youtubeSearch.search query, {maxResults:limit, startIndex:1}, (err, results) ->
       return cb err if err
       return cb null, (for video in results
         url: video.url

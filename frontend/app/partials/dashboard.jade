@@ -1,8 +1,10 @@
-h1 awesome dashboard here.
+div(ng-controller="DashboardCtrl")
+  h1 awesome dashboard here.
+  button.btn.btn-primary(ng-click="nextPictures()") START!
 
-ul.thumbnails
-  li.span4(ng-repeat="picture in currentPictures")
-    .thumbnail
-      img(src="{{picture.url}}", alt="", ng-click="nextPictures()")
-      h3 {{picture.title}}
-      p {{picture.tags}}
+  ul.thumbnails
+    li.span4(ng-repeat="picture in currentPictures")
+      .thumbnail
+        img(src="{{picture.url}}", alt="", ng-click="nextPictures()")
+        h3 {{picture.title}}
+        p {{picture.tags}}

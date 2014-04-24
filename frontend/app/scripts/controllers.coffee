@@ -37,10 +37,14 @@ angular.module('app.controllers', [])
 .controller('DashboardCtrl', ['$scope', 'Pictures', ($scope, Pictures) ->
   $scope.currentKeywords = ["Sonne","Strand","Meer","baden"]
   $scope.currentPictures = []
-  $scope.requestImages = -> Pictures.getForKeywords $scope.currentKeywords, (error, result) -> 
-    if error then alert error else $scope.currentPictures = result
+  $scope.requestPictures = -> Pictures.getForKeywords $scope.currentKeywords, (error, result) -> 
+    if error 
+      alert error 
+    else 
+      console.log "new pictures: ", result
+      $scope.currentPictures = result
   $scope.nextPictures = (sourceUrl) ->
     pic = _.filter($scope.currentPictures, (p) -> p.url is sourceUrl)[0]
-    $scope.currentKeywords = pic.tags
-    $scope.requestImages()
+    $scope.currentKeywords = pic?.tags or $scope.currentKeywords
+    $scope.requestPictures()
 ])

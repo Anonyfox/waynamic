@@ -89,10 +89,10 @@ app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or "default"
   console.log keywords
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords, (err, urls) ->
+  Flickr.find keywords, (err, pictures) ->
     return res.end err.message if err
-    return res.json null unless urls instanceof Array
-    res.json urls
+    return res.json null unless pictures instanceof Array
+    res.json pictures
 
 # query:  http://localhost:4343/videos?keywords=football
 app.get '/videos', (req, res) ->

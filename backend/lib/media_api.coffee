@@ -25,13 +25,17 @@ MediaApi.Flickr = ->
     flickr.get 'photos.search', per_page: count, page: page, tags: query, (result) ->
       return unless cb
       return cb new Error 'Flickr fail!' unless flickr and result and result.photos
-      urls = []
+      pictures = []
       for photo in result.photos.photo
         flickr.get 'photos.getInfo', {photo_id:photo.id}, (infos) ->
+          # console.log infos.photo
           url = infos.photo.urls.url[0]._content
-          urls.push url
-          if urls.length is count
-            return cb null, urls
+          title = infos.photo.title._content
+          tags = (obj._content for obj in infos.photo.tags.tag when obj._content)
+          console.log typeof tags
+          pictures.push {url:url, title:title, tags:tags}
+          if pictures.length is count
+            return cb null, pictures
 
   Flickr
 

@@ -1,10 +1,27 @@
 MediaApi = exports? and exports or @MediaApi = {}
 
-http = require 'http'
 async = require 'async'
 _ = require 'underscore'
 
 
+# --- helper -------------------------------------------------------------------
+
+querystring = require 'querystring'
+http = require 'http'
+
+request = (url, parameters..., cb) ->
+  url += '?' + querystring.stringify _.extend parameters...
+  http.get url, (res) ->
+    data = ''
+    res.on 'data', (chunk) -> data += chunk
+    res.on 'end', ->
+      try
+        return cb null, JSON.parse data
+      catch
+        return cb new Error 'no valid json'
+
+
+# --- flickr -------------------------------------------------------------------
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
@@ -56,19 +73,13 @@ MediaApi.Flickr = (api_key) ->
 
   get = (method, opts, cb) ->
     url = "http://api.flickr.com/services/rest/"
-    url += "?&method=flickr.#{method}&api_key=#{api_key}&format=json&nojsoncallback=1"
-    url += "&#{k}=#{v}" for k,v of opts
-    http.get url, (res) ->
-      data = ''
-      res.on 'data', (chunk) -> data += chunk
-      res.on 'end', ->
-        # data = data.replace "'", "’"
-        # console.log data
-        cb null, JSON.parse(data)
+    glob = method:"flickr.#{method}", api_key:api_key, format:'json', nojsoncallback:1
+    request url, glob, opts, cb
 
   Flickr
 
 
+# --- youtube ------------------------------------------------------------------
 
 MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
@@ -93,7 +104,7 @@ MediaApi.Youtube = ->
   crawl = (cb) ->
     youtubeSearch.search query, {maxResults:count, startIndex:start}, (err, results) ->
       return cb err if err
-      results = (for video in results
+      return cb null, (for video in results
         url: video.url
         title: video.title
         category: video.category
@@ -101,11 +112,31 @@ MediaApi.Youtube = ->
         thumbnail: video.thumbnails[0].url
         )
 
-
-      return cb null, results
-
-
   Youtube
 
 
+# --- itunes -------------------------------------------------------------------
 
+MediaApi.iTunes = ->
+  iTunes = {}
+  opts =
+    country: 'de'
+    media: 'all'
+    limit: 9
+    explicit: 'No'
+
+  iTunes.set = (key, value) ->
+    switch key
+      when 'country' then opts.country = value
+      when 'media' then opts.media = value
+      when 'limit' then opts.limit = value
+
+  # movie, podcast, music, musicVideo, audiobook, shortFilm, tvShow, software, ebook, all
+  iTunes.find = (term, cb) ->
+    request 'http://itunes.apple.com/search', opts, term:term, cb
+
+  iTunes.find.movie = -> opts.media = 'movie'; iTunes.find arguments...
+  iTunes.find.music = -> opts.media = 'music'; iTunes.find arguments...
+
+
+  iTunes

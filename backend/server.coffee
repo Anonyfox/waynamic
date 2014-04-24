@@ -9,6 +9,7 @@ _ = require "underscore"
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
 Youtube = MediaApi.Youtube()
+iTunes = MediaApi.iTunes()
 
 ########################
 ### AUTHENTIFICATION ###
@@ -86,19 +87,32 @@ app.get "/test", (req, res) -> res.json req.user
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->
-  keywords = req.query.keywords or "flickr"
+  keywords = req.query.keywords or 'flickr'
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords, (err, pictures) ->
+  Flickr.find keywords, (err, result) ->
     return res.end err.message if err
-    return res.json null unless pictures instanceof Array # redundant
-    return res.json pictures
+    return res.json result
 
 # query:  http://localhost:4343/videos?searchstring=coffeescript
 app.get '/videos', (req, res) ->
-  searchstring = req.query.searchstring or "coffeescript"
-  Youtube.find searchstring, (err, videos) ->
+  searchstring = req.query.searchstring or 'youtube'
+  Youtube.find searchstring, (err, result) ->
     return res.end err.message if err
-    return res.json videos
+    return res.json result
+
+# query:  http://localhost:4343/movies?searchstring=matrix
+app.get '/movies', (req,res) ->
+  searchstring = req.query.searchstring or 'itunes'
+  iTunes.find.movie searchstring, (err, result) ->
+    return res.end err.message if err
+    return res.json result
+
+# query:  http://localhost:4343/music?searchstring=matrix
+app.get '/music', (req,res) ->
+  searchstring = req.query.searchstring or 'itunes'
+  iTunes.find.music searchstring, (err, result) ->
+    return res.end err.message if err
+    return res.json result
 
 
 

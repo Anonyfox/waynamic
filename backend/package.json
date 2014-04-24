@@ -23,7 +23,8 @@
     "passport": "~0.2.0",
     "passport-local": "~1.0.0",
     "connect-nedb-session": "0.0.2",
-    "youtube-search": "0.0.8"
+    "youtube-search": "0.0.8",
+    "itunes-search": "^1.0.1"
   },
   "devDependencies": {
     "mocha": "~1.17.1",

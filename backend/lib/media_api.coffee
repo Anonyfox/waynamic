@@ -1,6 +1,9 @@
 MediaApi = exports? and exports or @MediaApi = {}
 
 http = require 'http'
+async = require 'async'
+_ = require 'underscore'
+
 
 
 MediaApi.Flickr = (api_key) ->
@@ -28,14 +31,28 @@ MediaApi.Flickr = (api_key) ->
       return cb err if err
       pictures = []
       for photo in result.photos.photo
-        get 'photos.getInfo', {photo_id:photo.id}, (err, infos) ->
+        crawl_one photo.id, (err, picture) ->
           return cb err if err
-          pictures.push(
-            url: infos.photo.urls.url[0]._content
-            title: infos.photo.title._content
-            tags: (obj._content for obj in infos.photo.tags.tag when obj._content)
-            )
+          pictures.push picture
           return cb null, pictures if pictures.length is count
+
+  crawl_one = (id, cb) ->
+    async.parallel
+      info: (cb) ->
+        get 'photos.getInfo', photo_id:id, (err, result) ->
+          return cb err if err
+          return cb null,
+            title: result.photo.title._content
+            tags: (obj._content for obj in result.photo.tags.tag when obj._content)
+      sizes: (cb) ->
+        get 'photos.getSizes', photo_id:id, (err, result) ->
+          return cb err if err
+          return cb null,
+            # url: result.sizes.size
+            url: (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
+      , (err, all) ->
+        return cb err if err
+        return cb null, _.extend(all.info, all.sizes)
 
   get = (method, opts, cb) ->
     url = "http://api.flickr.com/services/rest/"
@@ -46,10 +63,11 @@ MediaApi.Flickr = (api_key) ->
       res.on 'data', (chunk) -> data += chunk
       res.on 'end', ->
         # data = data.replace "'", "’"
-        console.log data
+        # console.log data
         cb null, JSON.parse(data)
 
   Flickr
+
 
 
 MediaApi.Youtube = ->

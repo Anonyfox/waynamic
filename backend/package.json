@@ -18,7 +18,7 @@
     "neo4j": "~1.1.0",
     "cypher-query": "0.0.11",
     "underscore": "~1.6.0",
-    "async": "~0.2.10",
+    "async": "^0.2.10",
     "nedb": "~0.10.4",
     "passport": "~0.2.0",
     "passport-local": "~1.0.0",

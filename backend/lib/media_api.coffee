@@ -38,21 +38,21 @@ MediaApi.Flickr = (api_key) ->
 
   crawl_one = (id, cb) ->
     async.parallel
-      info: (cb) ->
-        get 'photos.getInfo', photo_id:id, (err, result) ->
-          return cb err if err
-          return cb null,
-            title: result.photo.title._content
-            tags: (obj._content for obj in result.photo.tags.tag when obj._content)
       sizes: (cb) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
           return cb null,
             # url: result.sizes.size
             url: (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
+      info: (cb) ->
+        get 'photos.getInfo', photo_id:id, (err, result) ->
+          return cb err if err
+          return cb null,
+            title: result.photo.title._content
+            tags: (obj._content for obj in result.photo.tags.tag when obj._content)
       , (err, all) ->
         return cb err if err
-        return cb null, _.extend(all.info, all.sizes)
+        return cb null, _.extend(all.sizes, all.info)
 
   get = (method, opts, cb) ->
     url = "http://api.flickr.com/services/rest/"
@@ -71,10 +71,38 @@ MediaApi.Flickr = (api_key) ->
 
 
 MediaApi.Youtube = ->
+  youtubeSearch = require 'youtube-search'
   Youtube = {}
-  youtube = 'here be dragons'
-  count = 5
-  page = 1
+  count = 9
+  start = 1
+  query = ''
+
+  Youtube.set = (key, value) ->
+    switch key
+      when 'count' then count = value
+
+  Youtube.find = (searchstring, cb) ->
+    start = 1
+    query = searchstring
+    crawl cb
+
+  Youtube.findNext = (cb) ->
+    start += count
+    crawl cb
+
+  crawl = (cb) ->
+    youtubeSearch.search query, {maxResults:count, startIndex:start}, (err, results) ->
+      return cb err if err
+      results = (for video in results
+        url: video.url
+        title: video.title
+        category: video.category
+        author: video.author
+        )
+
+
+      return cb null, results
+
 
   Youtube
 

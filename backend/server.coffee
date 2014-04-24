@@ -86,15 +86,19 @@ app.get "/test", (req, res) -> res.json req.user
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->
-  keywords = req.query.keywords or "default"
+  keywords = req.query.keywords or "flickr"
   keywords = keywords.split ',' unless keywords instanceof Array
   Flickr.find keywords, (err, pictures) ->
     return res.end err.message if err
-    return res.json null unless pictures instanceof Array
-    res.json pictures
+    return res.json null unless pictures instanceof Array # redundant
+    return res.json pictures
 
-# query:  http://localhost:4343/videos?keywords=football
+# query:  http://localhost:4343/videos?searchstring=coffeescript
 app.get '/videos', (req, res) ->
+  searchstring = req.query.searchstring or "coffeescript"
+  Youtube.find searchstring, (err, videos) ->
+    return res.end err.message if err
+    return res.json videos
 
 
 

@@ -98,6 +98,7 @@ MediaApi.Youtube = ->
         title: video.title
         category: video.category
         author: video.author
+        thumbnail: video.thumbnails[0].url
         )
 
 

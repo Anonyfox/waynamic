@@ -33,3 +33,10 @@ angular.module('app.services', [])
   }
 ])
 
+.service("Pictures", ["$http", (http) ->
+  getForKeywords: (ary, fn) ->
+    $http.get("/pictures", ary).then(
+      (data) -> fn? null, data
+      (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
+    )
+])

@@ -34,52 +34,13 @@ angular.module('app.controllers', [])
       return ''
 ])
 
-.controller('MyCtrl1', [
-  '$scope'
-
-($scope) ->
-  $scope.onePlusOne = 2
+.controller('DashboardCtrl', ['$scope', 'Pictures', ($scope, Pictures) ->
+  $scope.currentKeywords = ["Sonne","Strand","Meer","baden"]
+  $scope.currentPictures = []
+  $scope.requestImages = -> Pictures.getForKeywords $scope.currentKeywords, (error, result) -> 
+    if error then alert error else $scope.currentPictures = result
+  $scope.nextPictures = (sourceUrl) ->
+    pic = _.filter($scope.currentPictures, (p) -> p.url is sourceUrl)[0]
+    $scope.currentKeywords = pic.tags
+    $scope.requestImages()
 ])
-
-.controller('MyCtrl2', [
-  '$scope'
-
-($scope) ->
-  $scope
-])
-
-.controller('TodoCtrl', [
-  '$scope'
-
-($scope) ->
-
-  $scope.todos = [
-    text: "learn angular"
-    done: true
-  ,
-    text: "build an angular app"
-    done: false
-  ]
-
-  $scope.addTodo = ->
-    $scope.todos.push
-      text: $scope.todoText
-      done: false
-
-    $scope.todoText = ""
-
-  $scope.remaining = ->
-    count = 0
-    angular.forEach $scope.todos, (todo) ->
-      count += (if todo.done then 0 else 1)
-
-    count
-
-  $scope.archive = ->
-    oldTodos = $scope.todos
-    $scope.todos = []
-    angular.forEach oldTodos, (todo) ->
-      $scope.todos.push todo  unless todo.done
-
-])
-

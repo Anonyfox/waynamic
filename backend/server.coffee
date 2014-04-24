@@ -87,7 +87,6 @@ app.get "/test", (req, res) -> res.json req.user
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or "default"
-  console.log keywords
   keywords = keywords.split ',' unless keywords instanceof Array
   Flickr.find keywords, (err, pictures) ->
     return res.end err.message if err

@@ -22,8 +22,7 @@
     "nedb": "~0.10.4",
     "passport": "~0.2.0",
     "passport-local": "~1.0.0",
-    "connect-nedb-session": "0.0.2",
-    "node-flickr": "0.0.1"
+    "connect-nedb-session": "0.0.2"
   },
   "devDependencies": {
     "mocha": "~1.17.1",

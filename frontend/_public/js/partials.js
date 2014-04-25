@@ -34,6 +34,22 @@ angular.module('partials', [])
 '</ul>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/pictures.html', [
+'',
+'<div ng-controller="PicturesCtrl">',
+'  <ul class="thumbnails">',
+'    <li ng-repeat="picture in currentPictures" class="span4">',
+'      <div class="thumbnail"><img src="{{picture.url}}" alt="" ng-click="nextPicturesByUrl(picture.url)" style="cursor: pointer; height:240px; width:360px;">',
+'        <h3>{{picture.title}}</h3>',
+'        <p> ',
+'          <button ng-click="nextPicturesByTag(tag)" ng-repeat="tag in picture.tags" class="btn btn-link">{{tag}}</button>',
+'        </p>',
+'      </div>',
+'    </li>',
+'  </ul>',
+'</div>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/profile.html', [
 '',
 '<h1>awesome profile page here.</h1>',
@@ -64,21 +80,5 @@ angular.module('partials', [])
 '      </p>',
 '    </form>',
 '  </div>',
-'</div>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/pictures.html', [
-'',
-'<div ng-controller="PicturesCtrl">',
-'  <ul class="thumbnails">',
-'    <li ng-repeat="picture in currentPictures" class="span4">',
-'      <div class="thumbnail"><img src="{{picture.url}}" alt="" ng-click="nextPicturesByUrl(picture.url)" style="cursor: pointer;">',
-'        <h3>{{picture.title}}</h3>',
-'        <p> ',
-'          <button ng-click="nextPicturesByTag(tag)" ng-repeat="tag in picture.tags" class="btn btn-link">{{tag}}</button>',
-'        </p>',
-'      </div>',
-'    </li>',
-'  </ul>',
 '</div>',''].join("\n"));
 }]);

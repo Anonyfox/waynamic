@@ -22,7 +22,6 @@ App.config([
 
     .when('/', {templateUrl: '/partials/landingpage.html'})
     .when('/pictures', {templateUrl: '/partials/pictures.html'})
-    # .when('/home', {templateUrl: '/partials/dashboard.html'})
     .when('/profile', {templateUrl: '/partials/profile.html'})
     .when('/import', {templateUrl: '/partials/import.html'})
     .when('/register', {templateUrl: '/partials/register.html'})

@@ -46,9 +46,13 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   '$scope', 'Pictures', function($scope, Pictures) {
     $scope.currentPictures = [
       {
-        tags: ["Sonne", "Strand", "Meer", "baden"],
+        tags: ["Sonne", "Strand", "Meer"],
         title: "tramonto in Grecia (Loutraki - golfo di Corinto)",
         url: "http://farm8.staticflickr.com/7295/13972537026_913a8a116b.jpg"
+      }, {
+        title: "Lac de Capitello, een paternostermeer, Corsica Frankrijk 2002",
+        url: "http://farm6.staticflickr.com/5218/13981158706_c497a0feff.jpg",
+        tags: ["lacdecapitello", "paternostermeer", "meer", "lake", "lac", "corsica", "corse", "frankrijk", "france", "2002"]
       }
     ];
     $scope.requestPictures = function(keywords) {
@@ -56,6 +60,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
         if (error) {
           return alert(error);
         } else {
+          console.log(result.data);
           return $scope.currentPictures = result.data;
         }
       });

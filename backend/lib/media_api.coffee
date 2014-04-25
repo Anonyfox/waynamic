@@ -11,7 +11,7 @@ http = require 'http'
 
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
-  console.log "url: ---> #{url}"
+  console.log "url ---> #{url}"
   http.get url, (res) ->
     data = ''
     res.on 'data', (chunk) -> data += chunk
@@ -105,21 +105,45 @@ MediaApi.iTunes = ->
   iTunes = {}
   opts =
     country: 'de'
-    media: 'all'
     limit: 9
     explicit: 'No'
 
   iTunes.set = (key, value) ->
     switch key
       when 'country' then opts.country = value
-      when 'media' then opts.media = value
       when 'limit' then opts.limit = value
 
-  # movie, podcast, music, musicVideo, audiobook, shortFilm, tvShow, software, ebook, all
   iTunes.find = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, term:term, cb
+    request 'http://itunes.apple.com/search', opts, media:'all', term:term, cb
 
-  iTunes.find.movie = -> opts.media = 'movie'; iTunes.find arguments...
-  iTunes.find.music = -> opts.media = 'music'; iTunes.find arguments...
+  iTunes.find.movie = (term, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, (err, result) ->
+      return cb err if err
+      return cb err, result
+
+  iTunes.find.music = (term, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'music', term:term, (err, result) ->
+      return cb err if err
+      return cb null, (for track in result.results
+        track:
+          name: track.trackName
+          preview: track.previewUrl
+          view: track.trackViewUrl
+        artist:
+          id: track.artistId
+          name: track.artistName
+          view: track.artistViewUrl
+        collection_artist:
+          name: track.collectionName
+          view: track.collectionViewUrl
+          artwork: track.artworkUrl100
+        collection:
+          id: track.collectionArtistId
+          name: track.collectionArtistName
+        genre: track.primaryGenreName
+        )
+
+
+  # itunes.find.  podcast | musicVideo | audiobook | shortFilm | tvShow | software | ebook
 
   iTunes

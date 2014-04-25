@@ -11,6 +11,7 @@ http = require 'http'
 
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
+  console.log "url: ---> #{url}"
   http.get url, (res) ->
     data = ''
     res.on 'data', (chunk) -> data += chunk
@@ -34,7 +35,7 @@ MediaApi.Flickr = (api_key) ->
   Flickr.find = (keywords, cb) ->
     return unless cb
     tags = keywords.join ','
-    get 'photos.search', per_page: limit, page: 1, tags: tags, (err, result) ->
+    get 'photos.search', per_page: limit, tags: tags, (err, result) ->
       return cb err if err
       pictures = []
       for photo in result.photos.photo
@@ -116,6 +117,5 @@ MediaApi.iTunes = ->
 
   iTunes.find.movie = -> opts.media = 'movie'; iTunes.find arguments...
   iTunes.find.music = -> opts.media = 'music'; iTunes.find arguments...
-
 
   iTunes

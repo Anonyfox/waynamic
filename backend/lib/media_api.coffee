@@ -26,23 +26,26 @@ request = (url, parameters..., cb) ->
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
-  limit = 9
+  opts4search =
+    per_page: 9
+    tags: ''
+    tag_mode: 'AND'
 
   Flickr.set = (key, value) ->
     switch key
-      when 'limit' then limit = value
+      when 'limit' then opts4search.per_page = value
 
   Flickr.find = (keywords, cb) ->
     return unless cb
-    tags = keywords.join ','
-    get 'photos.search', per_page: limit, tags: tags, (err, result) ->
+    opts4search.tags = keywords.join ','
+    get 'photos.search', opts4search, (err, result) ->
       return cb err if err
       pictures = []
       for photo in result.photos.photo
         crawl_one photo.id, (err, picture) ->
           return cb err if err
           pictures.push picture
-          return cb null, pictures if pictures.length is limit
+          return cb null, pictures if pictures.length is opts4search.per_page
 
   crawl_one = (id, cb) ->
     async.parallel

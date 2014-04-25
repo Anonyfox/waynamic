@@ -41,11 +41,12 @@ MediaApi.Flickr = (api_key) ->
     get 'photos.search', opts4search, (err, result) ->
       return cb err if err
       pictures = []
+      amount = Math.min result.photos.photo.length, opts4search
       for photo in result.photos.photo
         crawl_one photo.id, (err, picture) ->
           return cb err if err
           pictures.push picture
-          return cb null, pictures if pictures.length is opts4search.per_page
+          return cb null, pictures if pictures.length is amount
 
   crawl_one = (id, cb) ->
     async.parallel

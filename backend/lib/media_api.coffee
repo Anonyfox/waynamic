@@ -116,33 +116,58 @@ MediaApi.iTunes = ->
   iTunes.find = (term, cb) ->
     request 'http://itunes.apple.com/search', opts, media:'all', term:term, cb
 
-  iTunes.find.movie = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, (err, result) ->
-      return cb err if err
-      return cb err, result
-
   iTunes.find.music = (term, cb) ->
     request 'http://itunes.apple.com/search', opts, media:'music', term:term, (err, result) ->
       return cb err if err
+      # return cb err, result.results # full output
       return cb null, (for track in result.results
+        wrapperType: track.wrapperType
+        kind: track.kind
+        preview: track.previewUrl
+        artwork: track.artworkUrl100
         track:
+          id: track.trackId
           name: track.trackName
-          preview: track.previewUrl
           view: track.trackViewUrl
         artist:
           id: track.artistId
           name: track.artistName
           view: track.artistViewUrl
-        collection_artist:
+        collection:
+          id: track.collectionId
           name: track.collectionName
           view: track.collectionViewUrl
-          artwork: track.artworkUrl100
-        collection:
+        collection_artist:
           id: track.collectionArtistId
           name: track.collectionArtistName
         genre: track.primaryGenreName
         )
 
+  iTunes.find.movie = (term, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, (err, result) ->
+      return cb err if err
+      # return cb err, result.results # full output
+      return cb null, (for movie in result.results
+        wrapperType: movie.wrapperType
+        kind: movie.kind
+        preview: movie.previewUrl
+        artwork: movie.artworkUrl100
+        track:
+          id: movie.trackId
+          name: movie.trackName
+          view: movie.trackViewUrl
+        artist:
+          name: movie.artistName
+        collection:
+          id: movie.collectionId
+          name: movie.collectionName
+          view: movie.collectionViewUrl
+        collection_artist:
+          id: movie.collectionArtistId
+          view: movie.collectionArtistViewUrl
+        genre: movie.primaryGenreName
+        contentAdvisoryRating: movie.contentAdvisoryRating
+        )
 
   # itunes.find.  podcast | musicVideo | audiobook | shortFilm | tvShow | software | ebook
 

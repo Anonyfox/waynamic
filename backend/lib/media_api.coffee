@@ -41,7 +41,7 @@ MediaApi.Flickr = (api_key) ->
     get 'photos.search', opts4search, (err, result) ->
       return cb err if err
       pictures = []
-      amount = Math.min result.photos.photo.length, opts4search
+      amount = Math.min result.photos.photo.length, opts4search.per_page
       for photo in result.photos.photo
         crawl_one photo.id, (err, picture) ->
           return cb err if err

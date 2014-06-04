@@ -16,3 +16,6 @@ test/test-results.xml
 
 # Bower stuff.
 bower_components/
+
+
+_public/*

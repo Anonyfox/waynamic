@@ -3,18 +3,54 @@ waynamic
 
 some descriptions here...
 
-##Frontend
-* benötigt: `npm install brunch -g`, `npm install bower -g`
-* `npm install` und `bower install` im /frontend ordner
-* starten im /frontend ordner mit `brunch watch --server`
+## angular frontend
 
+* install
+  * `npm install brunch -g` (frontend compiler)
+  * `npm install bower -g` (frontend package manager)
 
-##Backend
-* benötigt: `npm install coffee-script -g`
-* empfohlen: `npm install nodemon -g`
-* `npm install` im /backend Ordner
-* starten im /backend Ordner mit `nodemon backend.coffee` (restart when files have changed) oder einfach mit `coffee backend.coffee`
+* build (execute commands in /frontend directory)
+  * `npm install` (get npm packages from package.json)
+  * `bower install` (get bower packages from bower.json)
+  * `brunch watch --server` (compile and watch for changes)
 
-##neo4j
-* todo
-* test
+* view page
+  [http://localhost:4343/](http://localhost:4343/) (keep shure that the backend server has been startet)
+
+## neo4j database
+
+* install
+  * first keep shure to have installed [jvm 1.7](http://java.com/de/download/manual.jsp#mac)
+  * `brew install neo4j` (on osx via [homebrew](http://brew.sh))
+    or otherwise install ist from [neo4j homepage](http://www.neo4j.org/download)
+  * `neo4j install` (initial)
+
+* start
+  * `neo4j start`
+
+* build dataset (execute these commands in /backend directory)
+  * `npm run db:create`
+  * `npm run db:clear`
+
+* explore data if you want
+  * `curl -v http://localhost:7474/db/data/`
+  * [http://localhost:7474/browser/](http://localhost:7474/browser/)
+
+## express backend
+
+* install
+  * `npm install coffee-script -g` (coffeescript)
+  * `npm install nodemon -g` (node monitor, restart if files have changed)
+
+* build (execute these commands in /backend directory)
+  * `npm install` (get npm packages from package.json)
+
+* run (execute one these commands in /backend directory)
+  * `nodemon server.coffee` (restart if files have changed)
+  * `coffee server.coffee` (start once)
+
+* explore api proxy
+  * [pictures from flickr](http://localhost:4343/pictures?keywords=forest,beach)
+  * [videos from youtube](http://localhost:4343/videos?searchstring=coffeescript)
+  * [movies from itunes](http://localhost:4343/movies?searchstring=matrix)
+  * [music from itunes](http://localhost:4343/music?searchstring=matrix)

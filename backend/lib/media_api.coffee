@@ -63,7 +63,13 @@ MediaApi.Flickr = (api_key) ->
             do add_one
 
       amount = Math.min need, result.photos.photo.length
-      return cb null, result
+      #---> dealing with the flickr error:
+      if amount is 0
+        console.log " _____FLICKR__ERROR______"
+      #   result = require './media_api_flickr_example_response.json'
+      #   amount = Math.min need, result.photos.photo.length
+      #   # result.photos.photo.sort -> 0.5 - Math.random() # make this synchronous
+      #<--- end
       async.times amount, add_one
 
 
@@ -74,10 +80,11 @@ MediaApi.Flickr = (api_key) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
           url = (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
-          http.head url, (res) -> # 'get' works - 'head' is was not able to test
-            size = res.headers['content-length']
-            return cb null, url:undefined if size < 15000
-            return cb null, url: url
+          # http.head url, (res) -> # here some freezes take place
+          #   console.log "url done"
+          #   size = res.headers['content-length']
+          #   return cb null, url:undefined if size < 15000
+          return cb null, url: url
       info: (cb) ->
         get 'photos.getInfo', photo_id:id, (err, result) ->
           return cb err if err

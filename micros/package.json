@@ -1,6 +1,6 @@
 {
   "name": "micros",
-  "version": "0.0.2",
+  "version": "0.9.1",
   "description": "Add the MicroService manifesto to any project.",
   "main": "micros.js",
   "private": true,
@@ -30,6 +30,8 @@
   "dependencies": {
     "express": "^3.5.1",
     "underscore": "^1.6.0",
-    "async": "^0.4.0"
+    "async": "^0.4.0",
+    "socket.io": "^0.9.17",
+    "socket.io-client": "^0.9.17"
   }
 }

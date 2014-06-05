@@ -35,6 +35,36 @@ process_inner_chain = (fn) ->
 
 ## Exports
 
+# Config
+Micros.Config =
+  ms_folder: 'node_modules'
+  log_folder: 'logs'
+  start_port: 4500
+  prefix: 'micros'
+
+# Config setter
+Micros.set = (key, value) ->
+  Micros.Config[key] = value
+
+# Config getter
+Micros.get = (key) ->
+  Micros.Config[key]
+
+# Spawn all known processes
+# Calls cb for each found service and pass the MicroService as parameter
+Micros.spawn = (cb) ->
+  fs = require 'fs'
+  cwd = do process.cwd
+  port = Micros.Config['start_port']
+  services = fs.readdirSync "#{cwd}/#{Micros.Config['ms_folder']}"
+  services = _.filter services, (ele) -> ele.match "^#{Micros.Config['prefix']}-(.*)"
+  async.each services, (name) ->
+    try
+      service = require "#{cwd}/#{Micros.Config['ms_folder']}/#{name}"
+      service.$spawn name, port
+      cb service
+      port = port + 1
+
 # MicroService Module
 Micros.MicroService = (name) ->
   # Process the inner chain to extend it
@@ -47,7 +77,7 @@ Micros.MicroService = (name) ->
       params.push fn
       fn = -> new Micros.Chain
     # Construct Service Parameter
-    service = name: ms.$module_name
+    service = name: ms.$name
     service.params = params if params.length > 0
     service.method = method if method?
     service.api = ms.$config.api
@@ -58,23 +88,16 @@ Micros.MicroService = (name) ->
     chain.value.push service
     chain
 
-  # Set name and check for micros prefix
-  ms.$module_name = 'micros-' + name unless (/^micros-(.*)/).exec name
-  # Initiate Cache (optional with Key-Value Store)
-  ms.$cache = {}
-  # Gather Cache (optional with Key-Value Store)
-  ms.$gathers = {}
-  ms.$timeouts = []
+  # Set name
+  ms.$name = name
+  # Caches
+  ms.$cache = {} # MicroService Cache
+  ms.$gathers = {} # Gather Cache
+  ms.$timeouts = [] # Timeout Cache
 
-  try
-    cwd = do process.cwd
-    ms.$config = require  "#{cwd}/node_modules/#{ms.$module_name}/config.json"
-    ms.$config.timeout = 10*1000 unless ms.$config['timeout']?
-    meta = require "#{cwd}/node_modules/#{ms.$module_name}/package.json"
-    ms.$module_name = meta.name
-    ms.$name = meta.name[1] if meta.name = (/^micros-(.*)/).exec meta.name
-    ms.$version = meta.version
-    ms.$description = meta.description
+  # Configure the MicroService with standard values or local package config
+  ms.$config = {}
+  ms.$config.timeout = 10*1000 unless ms.$config['timeout']?
 
   # Add all MicroService sub methods as fake methods
   ms.$install = (runtime) ->
@@ -87,6 +110,14 @@ Micros.MicroService = (name) ->
       ms[key]._type = Micros.MicroService
       ms[key]._this = @
   ms.$map = ms.$install
+
+  # Set config with Key and Value
+  ms.$set = (key, value) ->
+    ms.$config[key] = value
+
+  # Get a config key
+  ms.$get = (key) ->
+    ms.$config[key]
 
   # Pop the next MicroService from Chain-Stack and call the API
   ms.$next = (req..., res, chain) ->
@@ -110,14 +141,14 @@ Micros.MicroService = (name) ->
         # Construct the Gather
         path = path.concat link
         link = do path.pop
-      # Construct the message (ICM) (Protobuf?)
+      # Construct the message (ICM) (alternate use Protobuf?)
       message =
         request: req[i]
         response: res
-        sender: ms.$module_name
+        sender: ms.$name
         chain: path
-      message.request = _.last req if message.request?
-      # Multiple Message between two MircosServices
+      message.request = _.last req unless message.request?
+      # Multiple Message between two MircoServices
       if (i+1) is next.length and req[i+1]?
         message.request = _.rest req, i
       message.params = link.params if link.params?
@@ -136,48 +167,25 @@ Micros.MicroService = (name) ->
           request.write JSON.stringify(message)
           #console.log request
           do request.end
+        when 'ws'
+          unless ms.$cache[link.name]
+            ms.$cache[link.name] = require('socket.io-client').connect "http://localhost:#{link.port}"
+          ms.$cache[link.name].emit 'icm', message
 
   # Spawn new child processes with service invoker (deamon)
-  ms.$spawn = (cb = ->) ->
+  ms.$spawn = (name, port, cb = ->) ->
     exec = require('child_process').exec
     try
-      ms.$process = exec "#{__dirname}/bin/wrapper.js #{ms.$module_name} > #{ms.$module_name}"
+      ms.$config['port'] = port
+      ms.$process = exec "#{__dirname}/bin/wrapper.js #{Micros.Config['ms_folder']}/#{name} #{port} > #{Micros.Config['log_folder']}/#{name}.log 2>&1"
     catch error
       return setTimeout cb, 0, error
     setTimeout cb, 0
 
-  gather_call = (key, message) ->
-    stack = []
-    ms.$gathers[key].next.previous = ms.$gathers[key].previous
-    stack.push ms.$gathers[key].requests
-    stack.push ms.$gathers[key].responses
-    stack.push ms.$gathers[key].next
-    stack = stack.concat message.params if message.params?
-    # call the method asynchron
-    if message.method?
-      setTimeout ms.$runtime[message.method].apply, 0, ms, stack
-    else setTimeout ms.$runtime.apply, 0, ms, stack
-    # Free the Cache
-    delete ms.$gathers[key]
-
-  timeout = (key, message) ->
-    if ms.$gathers[key]?
-      gather_call key, message
-      ms.$gather[key] = 'timeouted'
-      ms.$timeouts.push key
-
-  # Clear all timeouted gathers
-  ms.$clear = ->
-    delete ms.$gather[key] for key in ms.$timeouts
-    ms.$timeouts = []
-
   # Call the MicroService API asynchronly with a ICM
   ms.$call = (message) ->
-    next = (req..., res) -> ms.$next.chain.call ms, req, res, message.chain
-    next.chain = message.chain
-    # Process a Gather
+    # Process a Gather when needed
     if message.gather?
-      return if ms.$gather[key] is 'timeouted'
       key = message.gather.key
       # Initialisation
       unless ms.$gathers[key]?
@@ -186,18 +194,31 @@ Micros.MicroService = (name) ->
           responses: []
           previous: []
           services: message.gather.services
-          next: next
-        setTimeout timeout, ms.$config.timeout, key, message
-      ms.$gathers[key].lock = true
+          next: (req..., res) -> ms.$next.call ms, req, res, message.chain
+        ms.$gathers[key].next.chain = message.chain
+        ms.$gathers[key].next.previous = []
+        setTimeout (-> delete ms.$gathers[key] if ms.$gathers[key]?), ms.$config.timeout
       # Add Informations to Cache
       ms.$gathers[key].requests.push message.request
       ms.$gathers[key].responses.push message.response
-      ms.$gathers[key].previous.push message.sender
+      ms.$gathers[key].next.previous.push message.sender
       ms.$gathers[key].services -= 1
-      # All MicroServices done ? Fire service
+      # All MicroServices done ? Fire service to accumulate the requests/responses
       if ms.$gathers[key].services is 0
-        gather_call key, message
+        stack = []
+        stack.push ms.$gathers[key].requests
+        stack.push ms.$gathers[key].responses
+        stack.push ms.$gathers[key].next
+        stack = stack.concat message.params if message.params?
+        # call the method asynchron
+        if message.method?
+          process.nextTick (-> ms.$runtime[message.method].apply ms, stack)
+        else process.nextTick (-> ms.$runtime.apply ms, stack)
+        # Free the Cache
+        delete ms.$gathers[key]
     else # Process a normal flow
+      next = (req..., res) -> ms.$next.call ms, req, res, message.chain
+      next.chain = message.chain
       next.previous = message.sender
       # Fill param list
       stack = []
@@ -207,16 +228,17 @@ Micros.MicroService = (name) ->
       stack = stack.concat message.params if message.params?
       # call the method asynchron
       if message.method?
-        setTimeout ms.$runtime[message.method].apply, 0, ms, stack
-      else setTimeout ms.$runtime.apply, 0, ms, stack
+        process.nextTick (-> ms.$runtime[message.method].apply ms, stack)
+      else process.nextTick (-> ms.$runtime.apply ms, stack)
 
   # Set process behaviour for deamons and optionaly start a cluster (with load-balancer)
-  ms.$deamon = ->
+  ms.$deamon = (port) ->
+    ms.$config['port'] = parseInt port
     # Clusterized start if config is set
     if ms.$config.clusters? and ms.$config.clusters > 1
       cluster = require 'cluster'
       if do cluster.isMaster
-        process.title = "MicroService: #{ms.$module_name} (#{ms.$version}) [master]"
+        process.title = "MicroService: #{ms.$name} (#{ms.$version}) [master]"
         # Start the workers
         _.times ms.$config.clusters, cluster.fork
         # Event handlers
@@ -225,7 +247,7 @@ Micros.MicroService = (name) ->
         cluster.on 'online', (worker) ->
           console.log "Worker[#{worker.id}]: '#{ms.$name}' started!"
       else
-        process.title = "MicroService: #{ms.$module_name} (#{ms.$version}) [slave]"
+        process.title = "MicroService: #{ms.$name} (#{ms.$version}) [slave]"
         # Finalization
         process.on 'SIGTERM', ->
           ms.$shutdown (error) ->
@@ -233,9 +255,8 @@ Micros.MicroService = (name) ->
         # Shared listen
         ms.$listen (error) ->
           console.log error if error
-    # Normal start
-    else
-      process.title = "MicroService: #{ms.$module_name} (#{ms.$version})"
+    else # Normal start
+      process.title = "MicroService: #{ms.$name} on port #{ms.$config.port}"
       # Finalization
       process.on 'SIGTERM', ->
         ms.$shutdown (error) ->
@@ -250,8 +271,6 @@ Micros.MicroService = (name) ->
 
   # Listen for incomming requests
   ms.$listen = (cb = ->) ->
-    # Interval for clear timeouts
-    ms.$interval = setInterval ms.$clear, 1000*60*5
     # Switch between different api's
     switch ms.$config.api
       when 'http'
@@ -262,18 +281,32 @@ Micros.MicroService = (name) ->
         app.post '/', (req, res, next) ->
           res.json req.body
           #res.send 200
-          console.log 'New Request!'
+          console.log "[#{new Date}] New Request from #{req.body.sender}!"
+          #console.log req.body
           ms.$call req.body
         app.post '/:method', (req, res, next) ->
           #res.send 200
           req.body.method = req.params['method']
-          console.log 'New Request!'
-          res.json req.body
+          console.log "[#{new Date}] New Request from #{req.body.sender}!"
+          #console.log req.body
           ms.$call req.body
         # Start the Server
         http = require 'http'
         ms.$service = http.createServer app
         ms.$service.listen ms.$config.port
+      when 'ws'
+        io = require 'socket.io'
+        app = io.listen ms.$config.port
+        app.set 'log level', 0
+        app.sockets.on 'connection', (ws) ->
+          console.log "[#{new Date}] New WebSocket connection from MicroService!"
+          ws.on 'icm', (message) ->
+            #console.log message
+            ms.$call message
+        app.sockets.on 'disconnect', (ws) ->
+          console.log "[#{new Date}] MicroService disconnected!"
+        ms.$service = app
+
     setTimeout cb, 0, null, ms.$service
 
   # Shutdown the Service (only valid in the same process as #listen)
@@ -282,7 +315,7 @@ Micros.MicroService = (name) ->
     clearInterval(ms.$interval) if ms.$interval?
     # Switch between different api's
     switch ms.$config.api
-      when 'http'
+      when 'http', 'ws'
         try
           do ms.$service.close
         catch error
@@ -308,7 +341,7 @@ Micros.Chain = (chain) ->
     reqres = init
     reqres.push {}        # Blank res object
     reqres.push ch.value  # The process chain
-    service = new Micros.MicroService 'router'
+    service = new Micros.MicroService 'router' # Dummy Router
     service.$next.apply service, reqres
 
   # Assimilate chaintypes to own chain
@@ -328,7 +361,7 @@ Micros.Chain = (chain) ->
   ch
 
 Micros.Broadcast = (chains...) ->
-  # Combine Broadcast with after Chain: that means a gather
+  # Combine Broadcast with after Chain
   bc = (fn) ->
     chain = new Micros.Chain fn
     chain.value = chain.value.concat [bc.value]
@@ -393,27 +426,27 @@ Micros.Broadcast = (chains...) ->
   # A parsed chain in array notation
   chain = [
     {                               # Object that saves MicroService information
-      name: ms.$module_name
+      name: ms.$name
     },
     [                               # Broadcast
       [                             # First broadcast link as inner Chain
         {                           # First MicroService from an inner Chain
-          name: ms.$module_name,
+          name: ms.$name,
           params: ['first', 'second', 'third']
         }
       ],
       [                             # Second broadcast link as inner Chain
         {                           # First MicroService from the second inner Chain
-          name: ms.$module_name,
+          name: ms.$name,
           method: 'action_handler'
         },
         {                           # Second MicroService from the second inner Chain
-          name: ms.$module_name,
+          name: ms.$name,
         }
       ]
     ],
     {                               # A Gather MicroService after a Broadcast
-      name: ms.$module_name,
+      name: ms.$name,
       api: 'http'
       port: 3030
     }

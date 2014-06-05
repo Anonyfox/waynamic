@@ -38,8 +38,43 @@
     return chain;
   };
 
+  Micros.Config = {
+    ms_folder: 'node_modules',
+    log_folder: 'logs',
+    start_port: 4500,
+    prefix: 'micros'
+  };
+
+  Micros.set = function(key, value) {
+    return Micros.Config[key] = value;
+  };
+
+  Micros.get = function(key) {
+    return Micros.Config[key];
+  };
+
+  Micros.spawn = function(cb) {
+    var cwd, fs, port, services;
+    fs = require('fs');
+    cwd = process.cwd();
+    port = Micros.Config['start_port'];
+    services = fs.readdirSync("" + cwd + "/" + Micros.Config['ms_folder']);
+    services = _.filter(services, function(ele) {
+      return ele.match("^" + Micros.Config['prefix'] + "-(.*)");
+    });
+    return async.each(services, function(name) {
+      var service;
+      try {
+        service = require("" + cwd + "/" + Micros.Config['ms_folder'] + "/" + name);
+        service.$spawn(name, port);
+        cb(service);
+        return port = port + 1;
+      } catch (_error) {}
+    });
+  };
+
   Micros.MicroService = function(name) {
-    var cwd, gather_call, meta, ms, timeout;
+    var ms;
     ms = function() {
       var chain, fn, method, params, service, _i;
       params = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), fn = arguments[_i++];
@@ -54,7 +89,7 @@
         };
       }
       service = {
-        name: ms.$module_name
+        name: ms.$name
       };
       if (params.length > 0) {
         service.params = params;
@@ -68,26 +103,14 @@
       chain.value.push(service);
       return chain;
     };
-    if (!/^micros-(.*)/.exec(name)) {
-      ms.$module_name = 'micros-' + name;
-    }
+    ms.$name = name;
     ms.$cache = {};
     ms.$gathers = {};
     ms.$timeouts = [];
-    try {
-      cwd = process.cwd();
-      ms.$config = require("" + cwd + "/node_modules/" + ms.$module_name + "/config.json");
-      if (ms.$config['timeout'] == null) {
-        ms.$config.timeout = 10 * 1000;
-      }
-      meta = require("" + cwd + "/node_modules/" + ms.$module_name + "/package.json");
-      ms.$module_name = meta.name;
-      if (meta.name = /^micros-(.*)/.exec(meta.name)) {
-        ms.$name = meta.name[1];
-      }
-      ms.$version = meta.version;
-      ms.$description = meta.description;
-    } catch (_error) {}
+    ms.$config = {};
+    if (ms.$config['timeout'] == null) {
+      ms.$config.timeout = 10 * 1000;
+    }
     ms.$install = function(runtime) {
       var key, value, _ref, _results;
       ms.$runtime = runtime;
@@ -109,6 +132,12 @@
       return _results;
     };
     ms.$map = ms.$install;
+    ms.$set = function(key, value) {
+      return ms.$config[key] = value;
+    };
+    ms.$get = function(key) {
+      return ms.$config[key];
+    };
     ms.$next = function() {
       var chain, http, i, link, message, next, options, path, req, request, res, util, _i, _j, _len, _results;
       req = 3 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 2) : (_i = 0, []), res = arguments[_i++], chain = arguments[_i++];
@@ -139,10 +168,10 @@
         message = {
           request: req[i],
           response: res,
-          sender: ms.$module_name,
+          sender: ms.$name,
           chain: path
         };
-        if (message.request != null) {
+        if (message.request == null) {
           message.request = _.last(req);
         }
         if ((i + 1) === next.length && (req[i + 1] != null)) {
@@ -174,71 +203,36 @@
             request.write(JSON.stringify(message));
             _results.push(request.end());
             break;
+          case 'ws':
+            if (!ms.$cache[link.name]) {
+              ms.$cache[link.name] = require('socket.io-client').connect("http://localhost:" + link.port);
+            }
+            _results.push(ms.$cache[link.name].emit('icm', message));
+            break;
           default:
             _results.push(void 0);
         }
       }
       return _results;
     };
-    ms.$spawn = function(cb) {
+    ms.$spawn = function(name, port, cb) {
       var error, exec;
       if (cb == null) {
         cb = function() {};
       }
       exec = require('child_process').exec;
       try {
-        ms.$process = exec("" + __dirname + "/bin/wrapper.js " + ms.$module_name + " > " + ms.$module_name);
+        ms.$config['port'] = port;
+        ms.$process = exec("" + __dirname + "/bin/wrapper.js " + Micros.Config['ms_folder'] + "/" + name + " " + port + " > " + Micros.Config['log_folder'] + "/" + name + ".log 2>&1");
       } catch (_error) {
         error = _error;
         return setTimeout(cb, 0, error);
       }
       return setTimeout(cb, 0);
     };
-    gather_call = function(key, message) {
-      var stack;
-      stack = [];
-      ms.$gathers[key].next.previous = ms.$gathers[key].previous;
-      stack.push(ms.$gathers[key].requests);
-      stack.push(ms.$gathers[key].responses);
-      stack.push(ms.$gathers[key].next);
-      if (message.params != null) {
-        stack = stack.concat(message.params);
-      }
-      if (message.method != null) {
-        setTimeout(ms.$runtime[message.method].apply, 0, ms, stack);
-      } else {
-        setTimeout(ms.$runtime.apply, 0, ms, stack);
-      }
-      return delete ms.$gathers[key];
-    };
-    timeout = function(key, message) {
-      if (ms.$gathers[key] != null) {
-        gather_call(key, message);
-        ms.$gather[key] = 'timeouted';
-        return ms.$timeouts.push(key);
-      }
-    };
-    ms.$clear = function() {
-      var key, _i, _len, _ref;
-      _ref = ms.$timeouts;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        key = _ref[_i];
-        delete ms.$gather[key];
-      }
-      return ms.$timeouts = [];
-    };
     ms.$call = function(message) {
       var key, next, stack;
-      next = function() {
-        var req, res, _i;
-        req = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), res = arguments[_i++];
-        return ms.$next.chain.call(ms, req, res, message.chain);
-      };
-      next.chain = message.chain;
       if (message.gather != null) {
-        if (ms.$gather[key] === 'timeouted') {
-          return;
-        }
         key = message.gather.key;
         if (ms.$gathers[key] == null) {
           ms.$gathers[key] = {
@@ -246,19 +240,50 @@
             responses: [],
             previous: [],
             services: message.gather.services,
-            next: next
+            next: function() {
+              var req, res, _i;
+              req = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), res = arguments[_i++];
+              return ms.$next.call(ms, req, res, message.chain);
+            }
           };
-          setTimeout(timeout, ms.$config.timeout, key, message);
+          ms.$gathers[key].next.chain = message.chain;
+          ms.$gathers[key].next.previous = [];
+          setTimeout((function() {
+            if (ms.$gathers[key] != null) {
+              return delete ms.$gathers[key];
+            }
+          }), ms.$config.timeout);
         }
-        ms.$gathers[key].lock = true;
         ms.$gathers[key].requests.push(message.request);
         ms.$gathers[key].responses.push(message.response);
-        ms.$gathers[key].previous.push(message.sender);
+        ms.$gathers[key].next.previous.push(message.sender);
         ms.$gathers[key].services -= 1;
         if (ms.$gathers[key].services === 0) {
-          return gather_call(key, message);
+          stack = [];
+          stack.push(ms.$gathers[key].requests);
+          stack.push(ms.$gathers[key].responses);
+          stack.push(ms.$gathers[key].next);
+          if (message.params != null) {
+            stack = stack.concat(message.params);
+          }
+          if (message.method != null) {
+            process.nextTick((function() {
+              return ms.$runtime[message.method].apply(ms, stack);
+            }));
+          } else {
+            process.nextTick((function() {
+              return ms.$runtime.apply(ms, stack);
+            }));
+          }
+          return delete ms.$gathers[key];
         }
       } else {
+        next = function() {
+          var req, res, _i;
+          req = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), res = arguments[_i++];
+          return ms.$next.call(ms, req, res, message.chain);
+        };
+        next.chain = message.chain;
         next.previous = message.sender;
         stack = [];
         stack.push(message.request);
@@ -268,18 +293,23 @@
           stack = stack.concat(message.params);
         }
         if (message.method != null) {
-          return setTimeout(ms.$runtime[message.method].apply, 0, ms, stack);
+          return process.nextTick((function() {
+            return ms.$runtime[message.method].apply(ms, stack);
+          }));
         } else {
-          return setTimeout(ms.$runtime.apply, 0, ms, stack);
+          return process.nextTick((function() {
+            return ms.$runtime.apply(ms, stack);
+          }));
         }
       }
     };
-    ms.$deamon = function() {
+    ms.$deamon = function(port) {
       var cluster;
+      ms.$config['port'] = parseInt(port);
       if ((ms.$config.clusters != null) && ms.$config.clusters > 1) {
         cluster = require('cluster');
         if (cluster.isMaster()) {
-          process.title = "MicroService: " + ms.$module_name + " (" + ms.$version + ") [master]";
+          process.title = "MicroService: " + ms.$name + " (" + ms.$version + ") [master]";
           _.times(ms.$config.clusters, cluster.fork);
           cluster.on('exit', function(worker, code, signal) {
             return console.log("Worker[" + worker.id + "]: '" + ms.$name + "' stopped!");
@@ -288,7 +318,7 @@
             return console.log("Worker[" + worker.id + "]: '" + ms.$name + "' started!");
           });
         } else {
-          process.title = "MicroService: " + ms.$module_name + " (" + ms.$version + ") [slave]";
+          process.title = "MicroService: " + ms.$name + " (" + ms.$version + ") [slave]";
           process.on('SIGTERM', function() {
             return ms.$shutdown(function(error) {
               if (error) {
@@ -303,7 +333,7 @@
           });
         }
       } else {
-        process.title = "MicroService: " + ms.$module_name + " (" + ms.$version + ")";
+        process.title = "MicroService: " + ms.$name + " on port " + ms.$config.port;
         process.on('SIGTERM', function() {
           return ms.$shutdown(function(error) {
             if (!error) {
@@ -323,11 +353,10 @@
       }
     };
     ms.$listen = function(cb) {
-      var app, express, http;
+      var app, express, http, io;
       if (cb == null) {
         cb = function() {};
       }
-      ms.$interval = setInterval(ms.$clear, 1000 * 60 * 5);
       switch (ms.$config.api) {
         case 'http':
           express = require('express');
@@ -335,18 +364,32 @@
           app.use(express.json());
           app.post('/', function(req, res, next) {
             res.json(req.body);
-            console.log('New Request!');
+            console.log("[" + (new Date) + "] New Request from " + req.body.sender + "!");
             return ms.$call(req.body);
           });
           app.post('/:method', function(req, res, next) {
             req.body.method = req.params['method'];
-            console.log('New Request!');
-            res.json(req.body);
+            console.log("[" + (new Date) + "] New Request from " + req.body.sender + "!");
             return ms.$call(req.body);
           });
           http = require('http');
           ms.$service = http.createServer(app);
           ms.$service.listen(ms.$config.port);
+          break;
+        case 'ws':
+          io = require('socket.io');
+          app = io.listen(ms.$config.port);
+          app.set('log level', 0);
+          app.sockets.on('connection', function(ws) {
+            console.log("[" + (new Date) + "] New WebSocket connection from MicroService!");
+            return ws.on('icm', function(message) {
+              return ms.$call(message);
+            });
+          });
+          app.sockets.on('disconnect', function(ws) {
+            return console.log("[" + (new Date) + "] MicroService disconnected!");
+          });
+          ms.$service = app;
       }
       return setTimeout(cb, 0, null, ms.$service);
     };
@@ -360,6 +403,7 @@
       }
       switch (ms.$config.api) {
         case 'http':
+        case 'ws':
           try {
             ms.$service.close();
           } catch (_error) {
@@ -475,27 +519,27 @@
      * A parsed chain in array notation
     chain = [
       {                               # Object that saves MicroService information
-        name: ms.$module_name
+        name: ms.$name
       },
       [                               # Broadcast
         [                             # First broadcast link as inner Chain
           {                           # First MicroService from an inner Chain
-            name: ms.$module_name,
+            name: ms.$name,
             params: ['first', 'second', 'third']
           }
         ],
         [                             # Second broadcast link as inner Chain
           {                           # First MicroService from the second inner Chain
-            name: ms.$module_name,
+            name: ms.$name,
             method: 'action_handler'
           },
           {                           # Second MicroService from the second inner Chain
-            name: ms.$module_name,
+            name: ms.$name,
           }
         ]
       ],
       {                               # A Gather MicroService after a Broadcast
-        name: ms.$module_name,
+        name: ms.$name,
         api: 'http'
         port: 3030
       }

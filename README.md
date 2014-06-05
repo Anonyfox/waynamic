@@ -20,7 +20,7 @@ some descriptions here...
 ## neo4j database
 
 * install
-  * first keep shure to have installed [jvm 1.7](http://java.com/de/download/manual.jsp#mac)
+  * first keep shure to have installed jvm 1.7 [see wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
   * `brew install neo4j` (on osx via [homebrew](http://brew.sh))
     or otherwise install ist from [neo4j homepage](http://www.neo4j.org/download)
   * `neo4j install` (initial)

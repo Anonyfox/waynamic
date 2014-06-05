@@ -16,34 +16,33 @@ history = (req, res, next, type, property) ->
   params =
     userID: req.user
     type: type          # {Music, Video, Movie, Picture}
-    property: property  # {Genre, Album, Artist, Collection, Tag, …}
-    weight: 0.1         # 10 Ignores is one dislike
+    metatag: metatag    # {Genre, Album, Artist, Collection, Tag, …}
   cypher = "
     START user=node({userID})
-    MATCH (user)-[click:Click]->(item:type)-[:property]->(thing)
-    MATCH (user)-[ignore:Ignore]->(item:type)-[:property]->(thing)
-    RETURN DISTINCT thing, count(click) AS likes, count(ignore)*weight AS dislikes
-    ORDER BY like DESC"
+    MATCH (user)-[l:Like]->(item:type)-[:metatag]->(metavalue)
+    MATCH (user)-[d:Dislike]->(item:type)-[:metatag]->(metavalue)
+    RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
+    ORDER BY likees DESC"
   db.query cypher, (err, result) ->
     res.history = {}
-    res.history[property] = result
+    res.history[metatag] = result
     next req, res
 
-# scale to 0.0...1.0  by max likes thing
+# scale to 0.0...1.0  by max likes metavalue
 normalize = (req, res, next) ->
-  for property of res.history
-    max = property[0].likes * 1.0
-    for thing in property
-      thing.likes /= max
-      thing.dislikes /= max
+  for metatag of res.history
+    max = metatag[0].likes * 1.0
+    for metavalue in metatag
+      metavalue.likes /= max
+      metavalue.dislikes /= max
   next req, res
 
 # scale like+dislike down to 0.0...1.0
 combine = (req, res, next) ->
-  for property of res.history
-    for thing in property
-      thing.likes = thing.likes * thing.likes / (thing.likes + thing.dislikes)
-      delete thing.dislikes
+  for metatag of res.history
+    for metavalue in metatag
+      metavalue.likes = metavalue.likes * metavalue.likes / (metavalue.likes + metavalue.dislikes)
+      delete metavalue.dislikes
   next req, res
 
 Interests = history -> normalize -> combine

@@ -21,19 +21,29 @@ request = (url, parameters..., cb) ->
       catch
         return cb new Error 'no valid json'
 
+http.head = (url, cb) ->
+  splitted = url.match /^http:\/\/(.*?)(\/.*)/
+  options =
+    method: 'HEAD'
+    host: splitted[1]
+    path: splitted[2]
+    port: 80
+  do (http.request options, cb).end
+
 
 # --- flickr -------------------------------------------------------------------
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
   opts4search =
-    per_page: 9
+    per_page: 18
     tags: ''
     tag_mode: 'AND'
+  need = 9
 
   Flickr.set = (key, value) ->
     switch key
-      when 'limit' then opts4search.per_page = value
+      when 'limit' then need = value
 
   Flickr.find = (keywords, cb) ->
     return unless cb
@@ -41,21 +51,33 @@ MediaApi.Flickr = (api_key) ->
     get 'photos.search', opts4search, (err, result) ->
       return cb err if err
       pictures = []
-      amount = Math.min result.photos.photo.length, opts4search.per_page
-      for photo in result.photos.photo
-        crawl_one photo.id, (err, picture) ->
+      add_one = ->
+        return cb null, pictures if result.photos.photo.length is 0
+        id = (do result.photos.photo.shift).id
+        crawl_one id, (err, picture) ->
           return cb err if err
-          pictures.push picture
-          return cb null, pictures if pictures.length is amount
+          if picture.url?
+            pictures.push picture
+            return cb null, pictures if pictures.length is need
+          else
+            do add_one
+
+      amount = Math.min need, result.photos.photo.length
+      return cb null, result
+      async.times amount, add_one
+
+
 
   crawl_one = (id, cb) ->
     async.parallel
       sizes: (cb) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
-          return cb null,
-            # url: result.sizes.size
-            url: (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
+          url = (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
+          http.head url, (res) -> # 'get' works - 'head' is was not able to test
+            size = res.headers['content-length']
+            return cb null, url:undefined if size < 15000
+            return cb null, url: url
       info: (cb) ->
         get 'photos.getInfo', photo_id:id, (err, result) ->
           return cb err if err

@@ -8,6 +8,9 @@ _ = require "underscore"
 
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
+# some other:
+# 6276fc67deb7a243f522a28fe8469e94
+# b0fc7b76902df58206b8095537fa46a6
 Youtube = MediaApi.Youtube()
 iTunes = MediaApi.iTunes()
 

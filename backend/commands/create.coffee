@@ -11,7 +11,7 @@ config = require "./config.json"
 
 ### functions ###
 createUser = (fn) ->
-  params = 
+  params =
     firstName: dict.firstNames[ _.random(0,dict.firstNames.length) ] # first names: http://deron.meranda.us/data/census-derived-all-first.txt
     lastName: dict.lastNames[ _.random(0,dict.lastNames.length) ] # last names: http://www.census.gov/genealogy/www/data/1990surnames/dist.all.last
     age: _.random(16,70)
@@ -20,15 +20,12 @@ createUser = (fn) ->
 
 createSomeUsers = (n, fn) -> async.timesSeries n, ((iterator, next) -> createUser (err, user) -> next(err, user)), fn
 
-createPictures = (fn) ->
-  
-
 ### actual command ###
 Create.run = (userCount, userConnectivity) ->
   userCount ?= config.create.users
   userConnectivity ?= config.create.userConnectivity
   console.log "creating database..."
-  createSomeUsers userCount, (err, users) -> 
+  createSomeUsers userCount, (err, users) ->
     if err
       console.log "!!! ERROR: Couldn't create Users: ", err
     else

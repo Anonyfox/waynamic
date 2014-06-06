@@ -17,12 +17,13 @@ history = (req, res, next, type, property) ->
     userID: req.user
     type: type          # {Music, Video, Movie, Picture}
     metatag: metatag    # {Genre, Album, Artist, Collection, Tag, …}
-  cypher = "
+  cypher = """
     START user=node({userID})
     MATCH (user)-[l:Like]->(item:type)-[:metatag]->(metavalue)
     MATCH (user)-[d:Dislike]->(item:type)-[:metatag]->(metavalue)
     RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
-    ORDER BY likees DESC"
+    ORDER BY likes DESC
+    """
   db.query cypher, (err, result) ->
     res.history = {}
     res.history[metatag] = result
@@ -45,7 +46,10 @@ combine = (req, res, next) ->
       delete metavalue.dislikes
   next req, res
 
-Interests = history -> normalize -> combine
+print = (req, res) ->
+  console.log res
+
+Interests = history -> normalize -> combine -> print
 
 
 # --- install ------------------------------------------------------------------

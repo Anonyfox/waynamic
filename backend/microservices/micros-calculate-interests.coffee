@@ -5,19 +5,16 @@ MicroService = require('micros').MicroService
 ms = new MicroService 'Interests'
 module.exports = ms
 
-Interests = (req, res, next, type, metatag) ->
-  params =
-    userID: req.user
-    type: type          # {Music, Video, Movie, Picture}
-    metatag: metatag    # {Genre, Album, Artist, Collection, Tag, …}
+# metatag = {Genre, Album, Artist, Collection, Tag, …}
+Interests = (req, res, next, metatag) ->
   cypher = """
     START user=node({userID})
-    MATCH (user)-[l:Like]->(item:type)-[:metatag]->(metavalue)
-    MATCH (user)-[d:Dislike]->(item:type)-[:metatag]->(metavalue)
+    MATCH (user)-[l:Like]->(item)-[:metatag]->(metavalue)
+    MATCH (user)-[d:Dislike]->(item)-[:metatag]->(metavalue)
     RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
     ORDER BY likes DESC
     """
-  db.query cypher, (err, result) ->
+  db.query cypher, userID:req.user, metatag:metatag (err, result) ->
     normalize result
     combine result
     res[metatag] = result

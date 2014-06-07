@@ -113,11 +113,14 @@ runtime.finish = (req, res, next) ->
 router.$install runtime
 router.$listen -> console.log "Startet routing service on Port 4500"
 
+
 # --- Setup Chains -------------------------------------------------------------
 
 feedback = 1
 interest = 1
 recommendation = new Chain getui
+recommendation.exec {}
+console.log recommendation.value
 
 # --- media api routes ---------------------------------------------------------
 
@@ -156,7 +159,6 @@ app.get '/recommendations', (req,res) ->
   request = {}
   request.key = key
   recommendation.exec request
-  console.log recommendation.value
   # Register Callback
   register[key] = (data) -> res.json data
 

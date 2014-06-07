@@ -1,7 +1,5 @@
 ## Libs
 
-coffee = require 'coffee-script'
-
 ## Code
 
 MicroService = require('micros').MicroService

@@ -39,13 +39,8 @@ MediaApi.Flickr = (api_key) ->
     per_page: 18
     tags: ''
     tag_mode: 'AND'
-  need = 9
 
-  Flickr.set = (key, value) ->
-    switch key
-      when 'limit' then need = value
-
-  Flickr.find = (keywords, cb) ->
+  Flickr.find = (keywords, limit, cb) ->
     return unless cb
     opts4search.tags = keywords.join ','
     get 'photos.search', opts4search, (err, result) ->
@@ -58,21 +53,19 @@ MediaApi.Flickr = (api_key) ->
           return cb err if err
           if picture.url?
             pictures.push picture
-            return cb null, pictures if pictures.length is need
+            return cb null, pictures if pictures.length is limit
           else
             do add_one
 
-      amount = Math.min need, result.photos.photo.length
+      amount = Math.min limit, result.photos.photo.length
       #---> dealing with the flickr error:
       if amount is 0
         console.log " _____FLICKR__ERROR______"
       #   result = require './media_api_flickr_example_response.json'
-      #   amount = Math.min need, result.photos.photo.length
+      #   amount = Math.min limit, result.photos.photo.length
       #   # result.photos.photo.sort -> 0.5 - Math.random() # make this synchronous
       #<--- end
       async.times amount, add_one
-
-
 
   crawl_one = (id, cb) ->
     async.parallel
@@ -108,13 +101,8 @@ MediaApi.Flickr = (api_key) ->
 MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
   Youtube = {}
-  limit = 9
 
-  Youtube.set = (key, value) ->
-    switch key
-      when 'limit' then limit = value
-
-  Youtube.find = (query, cb) ->
+  Youtube.find = (query, limit, cb) ->
     youtubeSearch.search query, {maxResults:limit, startIndex:1}, (err, results) ->
       return cb err if err
       return cb null, (for video in results
@@ -134,19 +122,13 @@ MediaApi.iTunes = ->
   iTunes = {}
   opts =
     country: 'de'
-    limit: 9
     explicit: 'No'
 
-  iTunes.set = (key, value) ->
-    switch key
-      when 'country' then opts.country = value
-      when 'limit' then opts.limit = value
+  iTunes.find = (term, limit, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'all', term:term, limit:limit, cb
 
-  iTunes.find = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'all', term:term, cb
-
-  iTunes.find.music = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'music', term:term, (err, result) ->
+  iTunes.find.music = (term, limit, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'music', term:term, limit:limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for track in result.results
@@ -172,8 +154,8 @@ MediaApi.iTunes = ->
         genre: track.primaryGenreName
         )
 
-  iTunes.find.movie = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, (err, result) ->
+  iTunes.find.movie = (term, limit, cb) ->
+    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, limit:limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for movie in result.results
@@ -197,7 +179,5 @@ MediaApi.iTunes = ->
         genre: movie.primaryGenreName
         contentAdvisoryRating: movie.contentAdvisoryRating
         )
-
-  # itunes.find.  podcast | musicVideo | audiobook | shortFilm | tvShow | software | ebook
 
   iTunes

@@ -128,28 +128,28 @@ console.log recommendation.value
 app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or 'flickr'
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords, (err, result) ->
+  Flickr.find keywords, 9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
 # query:  http://localhost:4343/videos?searchstring=coffeescript
 app.get '/videos', (req, res) ->
   searchstring = req.query.searchstring or 'youtube'
-  Youtube.find searchstring, (err, result) ->
+  Youtube.find searchstring, 9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
 # query:  http://localhost:4343/movies?searchstring=matrix
 app.get '/movies', (req,res) ->
   searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.movie searchstring, (err, result) ->
+  iTunes.find.movie searchstring, 9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
 # query:  http://localhost:4343/music?searchstring=matrix
 app.get '/music', (req,res) ->
   searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.music searchstring, (err, result) ->
+  iTunes.find.music searchstring, 9, (err, result) ->
     return res.end err.message if err
     return res.json result
 

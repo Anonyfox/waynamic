@@ -2,6 +2,7 @@ MediaApi = exports? and exports or @MediaApi = {}
 
 async = require 'async'
 _ = require 'underscore'
+sugar = require 'sugar'
 
 
 # --- helper -------------------------------------------------------------------
@@ -30,42 +31,56 @@ http.head = (url, cb) ->
     port: 80
   do (http.request options, cb).end
 
+yyyymmdd = ->
+  date = Date()
+  yyyy = date.getFullYear().toString()
+  mm = (date.getMonth()+1).toString().padLeft(2, '0')
+  dd = date.getDate().toString().padLeft(2, '0')
+  "#{yyyy}-#{mm}#{dd}"
+
 
 # --- flickr -------------------------------------------------------------------
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
-  opts4search =
-    per_page: 18
-    tags: ''
-    tag_mode: 'AND'
+
+  Flickr.cached = (limit, random, cb) ->
+    pictures = require '../data/flickr_top.json'
+    if random then pictures.sort -> Math.random() - 0.5
+    pictures first limit
+
+  Flickr.hot = (limit, cb) ->
+    return unless cb
+    limit = 1
+    get 'interestingness.getList', date:'2014-06-06', per_page: limit, (err, result) ->
+      gather err, result, limit, cb
 
   Flickr.find = (keywords, limit, cb) ->
+    # Flickr.hot(1, cb); return
     return unless cb
-    opts4search.tags = keywords.join ','
-    get 'photos.search', opts4search, (err, result) ->
-      return cb err if err
-      pictures = []
-      add_one = ->
-        return cb null, pictures if result.photos.photo.length is 0
-        id = (do result.photos.photo.shift).id
-        crawl_one id, (err, picture) ->
-          return cb err if err
-          if picture.url?
-            pictures.push picture
-            return cb null, pictures if pictures.length is limit
-          else
-            do add_one
+    opts =
+      per_page: 2*limit
+      tags: keywords.join ','
+      tag_mode: 'AND'
+    get 'photos.search', opts, (err, result) ->
+      gather err, result, limit, cb
 
-      amount = Math.min limit, result.photos.photo.length
-      #---> dealing with the flickr error:
-      if amount is 0
-        console.log " _____FLICKR__ERROR______"
-      #   result = require './media_api_flickr_example_response.json'
-      #   amount = Math.min limit, result.photos.photo.length
-      #   # result.photos.photo.sort -> 0.5 - Math.random() # make this synchronous
-      #<--- end
-      async.times amount, add_one
+  gather = (err, result, limit, cb) ->
+    return cb err if err
+    pictures = []
+    add_one = ->
+      return cb null, pictures if result.photos.photo.length is 0
+      id = (do result.photos.photo.shift).id
+      crawl_one id, (err, picture) ->
+        return cb err if err
+        if picture.url?
+          pictures.push picture
+          return cb null, pictures if pictures.length is limit
+        else
+          do add_one
+    amount = Math.min limit, result.photos.photo.length
+    cb new Error 'no photos returned' if amount is 0
+    async.times amount, add_one
 
   crawl_one = (id, cb) ->
     async.parallel

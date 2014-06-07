@@ -1,11 +1,11 @@
 neo4j = require 'neo4j'
-db = new neo4j 'http://localhost:7474'
+db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 MicroService = require('micros').MicroService
-ms = new MicroService 'Interests'
-module.exports = ms
+ms = new MicroService 'interests'
+ms.$set 'api', 'ws'
 
-Interests = (req, res, next, type, metatag) ->
+interests = (req, res, next, type, metatag) ->
   params =
     userID: req.user
     type: type          # {Music, Video, Movie, Picture}
@@ -33,5 +33,5 @@ combine = (metatag) ->
     tagvalue.likes = tagvalue.likes * tagvalue.likes / (tagvalue.likes + tagvalue.dislikes)
     delete tagvalue.dislikes
 
-ms.$install Interests
-ms.$config = require config.json
+ms.$install interests
+module.exports = ms

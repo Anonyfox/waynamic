@@ -108,19 +108,21 @@ router.$set 'port', 4500
 runtime = (req, res, next) ->
 
 runtime.finish = (req, res, next) ->
-  register[req.key] res
+  if register[req.key]?
+    register[req.key] res
+    delete register[req.key]
 
 router.$install runtime
-router.$listen -> console.log "Startet routing service on Port 4500"
+router.$listen -> console.log "Startet routing service on port 4500"
 
+generate_router_key = (req) ->
+  "{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
 
 # --- Setup Chains -------------------------------------------------------------
 
-feedback = 1
-interest = 1
-recommendation = new Chain getui
-recommendation.exec {}
-console.log recommendation.value
+fdbk = 1
+inte = interests -> router.finish
+reco = getui -> router.finish
 
 # --- media api routes ---------------------------------------------------------
 
@@ -155,12 +157,13 @@ app.get '/music', (req,res) ->
 
 app.get '/recommendations', (req,res) ->
   # Start the MicroChain
-  key = "{req.socket.remoteAddress}:#{req.socket.remotePort}"
+  key = do generate_router_key
+  console.log key
   request = {}
   request.key = key
-  recommendation.exec request
   # Register Callback
   register[key] = (data) -> res.json data
+  setTimeout (-> reco.exec request), 0
 
 ####################
 ### START SERVER ###

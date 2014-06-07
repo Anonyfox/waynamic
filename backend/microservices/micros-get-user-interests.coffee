@@ -7,7 +7,7 @@ ms = new MicroService 'getui'
 ms.$set 'api', 'ws'
 
 runtime = (req, res, next, params...) ->
-  console.log "test"
+  console.log "call!"
   next req, { hallo: 'world' }
 
 ms.$install runtime

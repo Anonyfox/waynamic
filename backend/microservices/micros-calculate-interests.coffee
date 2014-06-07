@@ -9,8 +9,8 @@ module.exports = ms
 Interests = (req, res, next, metatag) ->
   cypher = """
     START user=node({userID})
-    MATCH (user)-[l:Like]->(item)-[:metatag]->(metavalue)
-    MATCH (user)-[d:Dislike]->(item)-[:metatag]->(metavalue)
+    MATCH (user)-[l:Like]->(:Item)-[:metatag]->(metavalue)
+    MATCH (user)-[d:Dislike]->(:Item)-[:metatag]->(metavalue)
     RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
     ORDER BY likes DESC
     """

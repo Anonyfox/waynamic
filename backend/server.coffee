@@ -93,8 +93,9 @@ Micros = require 'micros'
 Splitter = Micros.Splitter
 Chain = Micros.Chain
 MicroService = Micros.MicroService
+register = {}
 
-Micros.set 'ms_folder', 'microsservices'
+Micros.set 'ms_folder', 'microservices'
 Micros.set 'start_port', '4501'
 Micros.spawn (service) -> eval "#{service.$name} = service"
 
@@ -107,12 +108,16 @@ router.$set 'port', 4500
 runtime = (req, res, next) ->
 
 runtime.finish = (req, res, next) ->
+  register[req.key] res
 
-
+router.$install runtime
 router.$listen -> console.log "Startet routing service on Port 4500"
 
 # --- Setup Chains -------------------------------------------------------------
 
+feedback = 1
+interest = 1
+recommendation = new Chain getui
 
 # --- media api routes ---------------------------------------------------------
 
@@ -147,7 +152,13 @@ app.get '/music', (req,res) ->
 
 app.get '/recommendations', (req,res) ->
   # Start the MicroChain
-
+  key = "{req.socket.remoteAddress}:#{req.socket.remotePort}"
+  request = {}
+  request.key = key
+  recommendation.exec request
+  console.log recommendation.value
+  # Register Callback
+  register[key] = (data) -> res.json data
 
 ####################
 ### START SERVER ###
@@ -155,3 +166,4 @@ app.get '/recommendations', (req,res) ->
 
 server = app.listen 4343
 console.log "Listening on port 4343"
+

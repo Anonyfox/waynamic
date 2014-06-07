@@ -5,11 +5,11 @@ coffee = require 'coffee-script'
 ## Code
 
 MicroService = require('micros').MicroService
-ms = new MicroService 'name'
+ms = new MicroService 'getui'
 ms.$set 'api', 'ws'
 
 runtime = (req, res, next, params...) ->
-  console.log "StartCode goes here!"
+  next req, { hallo: 'world' }
 
 ms.$install runtime
 

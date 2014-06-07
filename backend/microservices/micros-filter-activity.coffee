@@ -5,7 +5,7 @@ coffee = require 'coffee-script'
 ## Code
 
 MicroService = require('micros').MicroService
-ms = new MicroService 'name'
+ms = new MicroService 'filter'
 ms.$set 'api', 'ws'
 
 runtime = (req, res, next, params...) ->

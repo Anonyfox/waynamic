@@ -85,6 +85,34 @@ app.post "/register", (req, res) ->
           res.json sanitizeUser doc
 app.get "/test", (req, res) -> res.json req.user
 
+###########################
+### Setup MicroServices ###
+###########################
+
+Micros = require 'micros'
+Splitter = Micros.Splitter
+Chain = Micros.Chain
+MicroService = Micros.MicroService
+
+Micros.set 'ms_folder', 'microsservices'
+Micros.set 'start_port', '4501'
+Micros.spawn (service) -> eval "#{service.$name} = service"
+
+# --- Routing Service -----------------------------------------------------------
+
+router = new MicroService 'router'
+router.$set 'api', 'ws'
+router.$set 'port', 4500
+
+runtime = (req, res, next) ->
+
+runtime.finish = (req, res, next) ->
+
+
+router.$listen -> console.log "Startet routing service on Port 4500"
+
+# --- Setup Chains -------------------------------------------------------------
+
 
 # --- media api routes ---------------------------------------------------------
 
@@ -117,7 +145,8 @@ app.get '/music', (req,res) ->
     return res.end err.message if err
     return res.json result
 
-
+app.get '/recommendations', (req,res) ->
+  # Start the MicroChain
 
 
 ####################

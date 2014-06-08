@@ -130,28 +130,28 @@ reco = getui -> router.finish
 app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or 'flickr'
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords, 9, (err, result) ->
+  Flickr.find keywords:keywords, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/videos?searchstring=coffeescript
+# query:  http://localhost:4343/videos?term=coffeescript
 app.get '/videos', (req, res) ->
-  searchstring = req.query.searchstring or 'youtube'
-  Youtube.find searchstring, 9, (err, result) ->
+  term = req.query.term or 'youtube'
+  Youtube.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/movies?searchstring=matrix
+# query:  http://localhost:4343/movies?term=matrix
 app.get '/movies', (req,res) ->
-  searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.movie searchstring, 9, (err, result) ->
+  term = req.query.term or 'itunes'
+  iTunes.movie.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/music?searchstring=matrix
+# query:  http://localhost:4343/music?term=matrix
 app.get '/music', (req,res) ->
-  searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.music searchstring, 9, (err, result) ->
+  term = req.query.term or 'itunes'
+  iTunes.music.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 

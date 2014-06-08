@@ -2,7 +2,6 @@ MediaApi = exports? and exports or @MediaApi = {}
 
 async = require 'async'
 _ = require 'underscore'
-sugar = require 'sugar'
 
 
 # --- helper -------------------------------------------------------------------
@@ -31,12 +30,12 @@ http.head = (url, cb) ->
     port: 80
   do (http.request options, cb).end
 
-yyyymmdd = ->
-  date = Date()
-  yyyy = date.getFullYear().toString()
-  mm = (date.getMonth()+1).toString().padLeft(2, '0')
-  dd = date.getDate().toString().padLeft(2, '0')
-  "#{yyyy}-#{mm}#{dd}"
+yyyymmdd = (date) ->
+  yesterday = new Date( new Date() - (24 * 3600 * 1000) )
+  yyyy = yesterday.getFullYear().toString()
+  mm = (yesterday.getMonth()+1).toString(); if mm.length is 1 then mm = '0'+mm
+  dd = yesterday.getDate().toString(); if dd.length is 1 then dd = '0'+dd
+  "#{yyyy}-#{mm}-#{dd}"
 
 
 # --- flickr -------------------------------------------------------------------
@@ -44,26 +43,33 @@ yyyymmdd = ->
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
 
-  Flickr.cached = (limit, random, cb) ->
+  Flickr.cached = (opts, cb) ->
+    return unless cb
+    opts.limit ?= 9
+    opts.random ?= true
     pictures = require '../data/flickr_top.json'
-    if random then pictures.sort -> Math.random() - 0.5
-    pictures first limit
+    if opts.random then pictures.sort -> Math.random() - 0.5
+    return cb null, pictures.slice(0,opts.limit)
 
-  Flickr.hot = (limit, cb) ->
+  Flickr.hot = (opts, cb) ->
+    console.log  opts
     return unless cb
-    limit = 1
-    get 'interestingness.getList', date:'2014-06-06', per_page: limit, (err, result) ->
-      gather err, result, limit, cb
+    opts.limit ?= 9
+    opts.date ?= yyyymmdd()
+    console.log "******"
+    console.log  opts
+    get 'interestingness.getList', date:opts.date, per_page: 500, (err, result) ->
+      gather err, result, opts.limit, cb
 
-  Flickr.find = (keywords, limit, cb) ->
-    # Flickr.hot(1, cb); return
+  Flickr.find = (opts, cb) ->
+    # return Flickr.hot limit:10, date:'2014-06-06', cb # hack: hot
+    # return Flickr.cached limit:18, cb # hack: cached
     return unless cb
-    opts =
-      per_page: 2*limit
-      tags: keywords.join ','
-      tag_mode: 'AND'
-    get 'photos.search', opts, (err, result) ->
-      gather err, result, limit, cb
+    opts.limit ?= 9
+    opts.keywords ?= []
+    tags = opts.keywords.join ','
+    get 'photos.search', per_page:500, tag_mode: 'AND', tags:tags, (err, result) ->
+      gather err, result, opts.limit, cb
 
   gather = (err, result, limit, cb) ->
     return cb err if err
@@ -75,10 +81,12 @@ MediaApi.Flickr = (api_key) ->
         return cb err if err
         if picture.url?
           pictures.push picture
-          return cb null, pictures if pictures.length is limit
+          return cb null, pictures if pictures.length is amount
         else
           do add_one
-    amount = Math.min limit, result.photos.photo.length
+    available = result.photos.photo.length
+    amount = Math.min limit, available
+    console.log "available: #{available}, limit: #{limit}"
     cb new Error 'no photos returned' if amount is 0
     async.times amount, add_one
 
@@ -117,8 +125,11 @@ MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
   Youtube = {}
 
-  Youtube.find = (query, limit, cb) ->
-    youtubeSearch.search query, {maxResults:limit, startIndex:1}, (err, results) ->
+  Youtube.find = (opts, cb) ->
+    return unless cb
+    opts.limit ?= 9
+    opts.term ?= ''
+    youtubeSearch.search opts.term, {maxResults:opts.limit, startIndex:1}, (err, results) ->
       return cb err if err
       return cb null, (for video in results
         url: video.url
@@ -134,16 +145,24 @@ MediaApi.Youtube = ->
 # --- itunes -------------------------------------------------------------------
 
 MediaApi.iTunes = ->
-  iTunes = {}
-  opts =
+  config =
     country: 'de'
     explicit: 'No'
 
-  iTunes.find = (term, limit, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'all', term:term, limit:limit, cb
+  iTunes = {}
+  iTunes.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'all', term:opts.term, limit:opts.limit, cb
 
-  iTunes.find.music = (term, limit, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'music', term:term, limit:limit, (err, result) ->
+
+  iTunes.music = {}
+  iTunes.music.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'music', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for track in result.results
@@ -169,8 +188,12 @@ MediaApi.iTunes = ->
         genre: track.primaryGenreName
         )
 
-  iTunes.find.movie = (term, limit, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, limit:limit, (err, result) ->
+  iTunes.movie = {}
+  iTunes.movie.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'movie', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for movie in result.results

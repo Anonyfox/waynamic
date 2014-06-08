@@ -43,6 +43,8 @@ yyyymmdd = (date) ->
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
 
+  # opts.limit=9   opts.random=true
+  # available:  05.07.14  &  06.07.14  &  07.07.14
   Flickr.cached = (opts, cb) ->
     return unless cb
     opts.limit ?= 9
@@ -51,6 +53,7 @@ MediaApi.Flickr = (api_key) ->
     if opts.random then pictures.sort -> Math.random() - 0.5
     return cb null, pictures.slice(0,opts.limit)
 
+  # opts.limit=9   opts.date='2014-02-20'
   Flickr.hot = (opts, cb) ->
     console.log  opts
     return unless cb
@@ -61,9 +64,10 @@ MediaApi.Flickr = (api_key) ->
     get 'interestingness.getList', date:opts.date, per_page: 500, (err, result) ->
       gather err, result, opts.limit, cb
 
+  # opts.limit=9   opts.keywords=['sonne','strand','meer']
   Flickr.find = (opts, cb) ->
-    # return Flickr.hot limit:10, date:'2014-06-06', cb # hack: hot
-    # return Flickr.cached limit:18, cb # hack: cached
+    # return Flickr.hot limit:500, date:'2014-06-07', cb # api hack: hot pictures
+    # return Flickr.cached limit:18, cb                 # api hack: cached pictures
     return unless cb
     opts.limit ?= 9
     opts.keywords ?= []

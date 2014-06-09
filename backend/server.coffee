@@ -8,9 +8,6 @@ _ = require "underscore"
 
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
-# some other:
-# 6276fc67deb7a243f522a28fe8469e94
-# b0fc7b76902df58206b8095537fa46a6
 Youtube = MediaApi.Youtube()
 iTunes = MediaApi.iTunes()
 
@@ -134,28 +131,34 @@ inte = interests -> router.finish
 app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or 'flickr'
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords, 9, (err, result) ->
+  Flickr.find keywords:keywords, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/videos?searchstring=coffeescript
+# returns 9 top pictures of the last year
+app.get '/pictures/trainingset', (req, res) ->
+  Flickr.hot limit:9, (err, result) ->
+    return res.end err.message if err
+    return res.json result
+
+# query:  http://localhost:4343/videos?term=coffeescript
 app.get '/videos', (req, res) ->
-  searchstring = req.query.searchstring or 'youtube'
-  Youtube.find searchstring, 9, (err, result) ->
+  term = req.query.term or 'youtube'
+  Youtube.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/movies?searchstring=matrix
+# query:  http://localhost:4343/movies?term=matrix
 app.get '/movies', (req,res) ->
-  searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.movie searchstring, 9, (err, result) ->
+  term = req.query.term or 'itunes'
+  iTunes.movie.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
-# query:  http://localhost:4343/music?searchstring=matrix
+# query:  http://localhost:4343/music?term=matrix
 app.get '/music', (req,res) ->
-  searchstring = req.query.searchstring or 'itunes'
-  iTunes.find.music searchstring, 9, (err, result) ->
+  term = req.query.term or 'itunes'
+  iTunes.music.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 

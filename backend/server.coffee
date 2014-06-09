@@ -111,7 +111,7 @@ runtime.finish = (req, res, next) ->
   register[req.key] res
 
 router.$install runtime
-router.$listen -> console.log "Startet routing service on Port 4500"
+router.$listen -> console.log "Started routing service on Port 4500"
 
 
 # --- Setup Chains -------------------------------------------------------------

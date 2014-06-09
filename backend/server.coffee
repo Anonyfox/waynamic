@@ -8,9 +8,6 @@ _ = require "underscore"
 
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
-# some other:
-# 6276fc67deb7a243f522a28fe8469e94
-# b0fc7b76902df58206b8095537fa46a6
 Youtube = MediaApi.Youtube()
 iTunes = MediaApi.iTunes()
 
@@ -131,6 +128,12 @@ app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or 'flickr'
   keywords = keywords.split ',' unless keywords instanceof Array
   Flickr.find keywords:keywords, limit:9, (err, result) ->
+    return res.end err.message if err
+    return res.json result
+
+# returns 9 top pictures of the last year
+app.get '/pictures/trainingset', (req, res) ->
+  Flickr.hot limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 

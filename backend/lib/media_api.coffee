@@ -31,48 +31,69 @@ http.head = (url, cb) ->
   do (http.request options, cb).end
 
 
+# format date to string
+yyyymmdd = (date) ->
+  yyyy = date.getFullYear().toString()
+  mm = (date.getMonth()+1).toString(); if mm.length is 1 then mm = '0'+mm
+  dd = date.getDate().toString(); if dd.length is 1 then dd = '0'+dd
+  "#{yyyy}-#{mm}-#{dd}"
+
+
 # --- flickr -------------------------------------------------------------------
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
-  opts4search =
-    per_page: 18
-    tags: ''
-    tag_mode: 'AND'
-  need = 9
 
-  Flickr.set = (key, value) ->
-    switch key
-      when 'limit' then need = value
-
-  Flickr.find = (keywords, cb) ->
+  # opts.limit=9   opts.random=true
+  # available:  05-08.07.14
+  Flickr.cached = (opts, cb) ->
     return unless cb
-    opts4search.tags = keywords.join ','
-    get 'photos.search', opts4search, (err, result) ->
-      return cb err if err
-      pictures = []
-      add_one = ->
-        return cb null, pictures if result.photos.photo.length is 0
-        id = (do result.photos.photo.shift).id
-        crawl_one id, (err, picture) ->
-          return cb err if err
-          if picture.url?
-            pictures.push picture
-            return cb null, pictures if pictures.length is need
-          else
-            do add_one
+    opts.limit ?= Infinity
+    opts.random ?= true
+    pictures = require '../data/flickr_top.json'
+    if opts.random then pictures.sort -> Math.random() - 0.5
+    return cb null, pictures.slice(0,opts.limit)
 
-      amount = Math.min need, result.photos.photo.length
-      #---> dealing with the flickr error:
-      if amount is 0
-        console.log " _____FLICKR__ERROR______"
-      #   result = require './media_api_flickr_example_response.json'
-      #   amount = Math.min need, result.photos.photo.length
-      #   # result.photos.photo.sort -> 0.5 - Math.random() # make this synchronous
-      #<--- end
-      async.times amount, add_one
+  # opts.limit=9   opts.date='2014-02-20'
+  Flickr.hot = (opts, cb) ->
+    console.log  opts
+    return unless cb
+    opts.limit ?= 9
+    opts.random ?= true
+    opts.date ?= new Date()
+    opts.date = new Date(opts.date.setDate(opts.date.getDate()-parseInt(Math.random()*365))) if opts.random
+    get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
+      collect err, result, opts.limit, cb
 
+  # opts.limit=9   opts.keywords=['sonne','strand','meer']
+  Flickr.find = (opts, cb) ->
+    # return Flickr.hot limit:1, date:new Date(2014,6-1,9), cb # api hack: hot pictures
+    # return Flickr.cached limit:9, cb                         # api hack: cached pictures
+    return unless cb
+    opts.limit ?= 9
+    opts.keywords ?= []
+    tags = opts.keywords.join ','
+    get 'photos.search', per_page:500, tag_mode: 'AND', tags:tags, (err, result) ->
+      collect err, result, opts.limit, cb
 
+  collect = (err, result, limit, cb) ->
+    return cb err if err
+    pictures = []
+    add_one = ->
+      return cb null, pictures if result.photos.photo.length is 0
+      id = (do result.photos.photo.shift).id
+      crawl_one id, (err, picture) ->
+        return cb err if err
+        if picture.url?
+          pictures.push picture
+          return cb null, pictures if pictures.length is amount
+        else
+          do add_one
+    available = result.photos.photo.length
+    amount = Math.min limit, available
+    console.log "available: #{available}, limit: #{limit}"
+    cb new Error 'no photos returned' if amount is 0
+    async.times amount, add_one
 
   crawl_one = (id, cb) ->
     async.parallel
@@ -108,14 +129,12 @@ MediaApi.Flickr = (api_key) ->
 MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
   Youtube = {}
-  limit = 9
 
-  Youtube.set = (key, value) ->
-    switch key
-      when 'limit' then limit = value
-
-  Youtube.find = (query, cb) ->
-    youtubeSearch.search query, {maxResults:limit, startIndex:1}, (err, results) ->
+  Youtube.find = (opts, cb) ->
+    return unless cb
+    opts.limit ?= 9
+    opts.term ?= ''
+    youtubeSearch.search opts.term, {maxResults:opts.limit, startIndex:1}, (err, results) ->
       return cb err if err
       return cb null, (for video in results
         url: video.url
@@ -131,22 +150,24 @@ MediaApi.Youtube = ->
 # --- itunes -------------------------------------------------------------------
 
 MediaApi.iTunes = ->
-  iTunes = {}
-  opts =
+  config =
     country: 'de'
-    limit: 9
     explicit: 'No'
 
-  iTunes.set = (key, value) ->
-    switch key
-      when 'country' then opts.country = value
-      when 'limit' then opts.limit = value
+  iTunes = {}
+  iTunes.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'all', term:opts.term, limit:opts.limit, cb
 
-  iTunes.find = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'all', term:term, cb
 
-  iTunes.find.music = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'music', term:term, (err, result) ->
+  iTunes.music = {}
+  iTunes.music.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'music', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for track in result.results
@@ -172,8 +193,12 @@ MediaApi.iTunes = ->
         genre: track.primaryGenreName
         )
 
-  iTunes.find.movie = (term, cb) ->
-    request 'http://itunes.apple.com/search', opts, media:'movie', term:term, (err, result) ->
+  iTunes.movie = {}
+  iTunes.movie.find = (opts, cb) ->
+    return unless cb
+    opts.term ?= ''
+    opts.limit ?= 9
+    request 'http://itunes.apple.com/search', config, media:'movie', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for movie in result.results
@@ -197,7 +222,5 @@ MediaApi.iTunes = ->
         genre: movie.primaryGenreName
         contentAdvisoryRating: movie.contentAdvisoryRating
         )
-
-  # itunes.find.  podcast | musicVideo | audiobook | shortFilm | tvShow | software | ebook
 
   iTunes

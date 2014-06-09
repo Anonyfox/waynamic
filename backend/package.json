@@ -10,7 +10,8 @@
     "test": "./node_modules/mocha/bin/mocha",
     "tester": "./node_modules/mocha/bin/mocha --watch --growl",
     "db:create": "./node_modules/.bin/coffee ./commands/create.coffee",
-    "db:clear": "./node_modules/.bin/coffee ./commands/clear.coffee"
+    "db:clear": "./node_modules/.bin/coffee ./commands/clear.coffee",
+    "db:media": "./node_modules/.bin/coffee ./commands/create_media.coffee"
   },
   "dependencies": {
     "async": "^0.2.10",

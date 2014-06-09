@@ -12,7 +12,7 @@ interests = (req, res, next, metatag) ->
     MATCH (user)-[l:Like]->(:Item)-[:metatag]->(metavalue)
     MATCH (user)-[d:Dislike]->(:Item)-[:metatag]->(metavalue)
     RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
-    ORDER BY likes DESC
+    ORDER BY likes DESC;
     """
   db.query cypher, userID:req.user, metatag:metatag (err, result) ->
     normalize result

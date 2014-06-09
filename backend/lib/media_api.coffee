@@ -48,7 +48,7 @@ MediaApi.Flickr = (api_key) ->
   # available:  05-08.07.14
   Flickr.cached = (opts, cb) ->
     return unless cb
-    opts.limit ?= 9
+    opts.limit ?= Infinity
     opts.random ?= true
     pictures = require '../data/flickr_top.json'
     if opts.random then pictures.sort -> Math.random() - 0.5

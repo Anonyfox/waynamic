@@ -3,7 +3,7 @@
 ## Code
 
 MicroService = require('micros').MicroService
-ms = new MicroService 'getfa'
+ms = new MicroService 'friend'
 ms.$set 'api', 'ws'
 
 runtime = (req, res, next, params...) ->

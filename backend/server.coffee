@@ -113,7 +113,7 @@ runtime.finish = (req, res, next) ->
     delete register[req.key]
 
 router.$install runtime
-router.$listen -> console.log "Startet routing service on port 4500"
+router.$listen -> console.log "Started routing service on port 4500"
 
 generate_router_key = (req) ->
   "{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
@@ -122,7 +122,11 @@ generate_router_key = (req) ->
 
 fdbk = 1
 inte = interests -> router.finish
-reco = getui -> router.finish
+
+# Empfehlungen basierend auf den Aktivitäten der Freunde
+#filter = new Splitter friend.activity -> activity.filter
+#fit = items.aggregate -> extend
+#reco = user.interests -> friends -> filter -> fit -> predictions -> router.finish
 
 # --- media api routes ---------------------------------------------------------
 

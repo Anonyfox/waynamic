@@ -60,28 +60,6 @@ app.configure 'production', ->
   app.use express.staticCache()
   app.use express.static "#{__dirname}/../frontend/_public", {maxAge: week}
 
-
-#####################
-### PUBLIC ROUTES ###
-#####################
-
-sanitizeUser = (obj) -> _.pick(obj, "_id", "name", "created_at")
-auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
-
-app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
-app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
-app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
-app.post "/register", (req, res) ->
-  userdb.findOne {name: req.body.username}, (err, doc) ->
-    if err or doc
-      err or= {error: "Username already exists!"}
-      res.json 500, err
-    else
-      userdb.insert {name: req.body.username, password: req.body.password, created_at: new Date()}, (err, doc) ->
-        req.login doc, (err) ->
-          res.json sanitizeUser doc
-app.get "/test", (req, res) -> res.json req.user
-
 ###########################
 ### Setup MicroServices ###
 ###########################
@@ -121,9 +99,30 @@ fdbk = 1
 inte = interests -> router.finish
 
 # Empfehlungen basierend auf den Aktivitäten der Freunde
-#filter = new Splitter friend.activity -> activity.filter
-#fit = items.aggregate -> extend
-#reco = user.interests -> friends -> filter -> fit -> predictions -> router.finish
+#filter = new Splitter user.activities -> activity.filter
+#fit = item.aggregate -> extend
+#reco = user.interests -> user.friends -> filter -> fit -> prediction -> router.finish
+
+#####################
+### PUBLIC ROUTES ###
+#####################
+
+sanitizeUser = (obj) -> _.pick(obj, "_id", "name", "created_at")
+auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
+
+app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
+app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
+app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
+app.post "/register", (req, res) ->
+  userdb.findOne {name: req.body.username}, (err, doc) ->
+    if err or doc
+      err or= {error: "Username already exists!"}
+      res.json 500, err
+    else
+      userdb.insert {name: req.body.username, password: req.body.password, created_at: new Date()}, (err, doc) ->
+        req.login doc, (err) ->
+          res.json sanitizeUser doc
+app.get "/test", (req, res) -> res.json req.user
 
 # --- media api routes ---------------------------------------------------------
 

@@ -10,8 +10,8 @@ iTunes = MediaApi.iTunes()
 createSomePictures = (limit) ->
   Flickr.cached limit:limit, (err, pictures) ->
     AddMedia.pictures pictures, (err, pictures) ->
-      return console.log "!!! ERROR: Couldn't create Media: ", err if err
-      console.log ">>> Created #{pictures.length} Users."
+      # return console.log "!!! ERROR: Couldn't create Media: ", err if err
+      # console.log ">>> Created #{pictures.length} Users."
 
 CreateMedia.run = ->
   createSomePictures 2000

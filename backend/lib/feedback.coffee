@@ -3,6 +3,7 @@ Feedback = exports? and exports or @Feedback = {}
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
+# Feedback.click userID, 'picture', url:'flickrwhatever', (err) ->
 Feedback.click = (user, mediatype, media, cb) ->
   switch mediatype
     when 'picture' then Picture user, media, +1, 'Like', cb
@@ -25,13 +26,16 @@ Picture = (user, picture, rating, ratingtype, cb) ->
   picture.title
   picture.tags
   cypher = """
-    MATCH (user)-[r:ratingtype]->(picture)
+    START user=node({userID})
+    MERGE (user)-[r:ratingtype]->(picture {url:{url}})
     SET r.rating = r.rating + rating;
     """
-  db.query cypher, user:user, url:url, rating:rating, ratingtype:ratingtype cb
+  db.query cypher, userID:user, url:url, rating:rating, ratingtype:ratingtype, cb
 
-Video = (user, video, rating, ratingtype, cb) ->
 
-Movie = (user, picture, rating, ratingtype, cb) ->
 
-Music = (user, picture, rating, ratingtype, cb) ->
+Video = (user, video, rating, ratingtype, cb) -> return cb new Error "not yet implemented"
+
+Movie = (user, picture, rating, ratingtype, cb) -> return cb new Error "not yet implemented"
+
+Music = (user, picture, rating, ratingtype, cb) -> return cb new Error "not yet implemented"

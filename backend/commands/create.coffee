@@ -21,22 +21,14 @@ getRandomExistingUser = (currentUser) ->
   else
     return null
 
-# createUser = (fn) ->
-#   params =
-#     firstName: dict.firstNames[ _.random(0,dict.firstNames.length) ] # first names: http://deron.meranda.us/data/census-derived-all-first.txt
-#     lastName: dict.lastNames[ _.random(0,dict.lastNames.length) ] # last names: http://www.census.gov/genealogy/www/data/1990surnames/dist.all.last
-#     age: _.random(16,70)
-#   cypher = "CREATE (u:User {params}) SET u.createdAt = timestamp() RETURN u"
-#   db.query cypher, {params: params}, fn
-
 createUserNode = (fn) ->
   params =
     firstName: dict.firstNames[ _.random(0,dict.firstNames.length) ] # first names: http://deron.meranda.us/data/census-derived-all-first.txt
     lastName: dict.lastNames[ _.random(0,dict.lastNames.length) ] # last names: http://www.census.gov/genealogy/www/data/1990surnames/dist.all.last
     age: _.random(16,70)
-    createdAt: new Date()
-  u = db.createNode params
-  u.save (error, user) ->
+  cypher = "CREATE (u:User {params}) SET u.createdAt = timestamp() RETURN u"
+  db.query cypher, {params: params}, (error, nodes) ->
+    user = nodes[0].u
     user.index "Users", "id", user.id, ->
       userCache.push user
       target = getRandomExistingUser(user)
@@ -62,39 +54,40 @@ connectNeighbors = (p, fn) ->
   cypher = [
     'START a=node(*)',
     'MATCH (a) --> (b) -- (c)',
-    'WHERE NOT (a) -- (c)'
-    'RETURN a, c'
+    'WHERE NOT (a) -- (c)',
+    'RETURN a, c LIMIT 10' # limiting triangle connection possibilities to achieve linear runtime. Remove the limit for more accurate results
   ].join('\n');
   db.query cypher, {}, (err, pairs) ->
+    async.each pairs, ((pair, callback) ->
+      if Math.random() <= p
+        {a, c} = pair
+        a.createRelationshipTo c, "foaf:knows", {}, callback
+      else
+        callback null
+    ), fn
 
 createSomeUsers = (n, k, p, fn) ->
   async.timesSeries n, ((iterator, next) ->
-    createUserNode (err, user) ->
-      createSomeEdges k, (err, edges) ->
-        connectNeighbors p, ->
-          next(err, user)
+    console.log "iteration: ", iterator, n
+    createUserNode (err, user) -> createSomeEdges k, (err, edges) -> connectNeighbors p, -> next(err, user)
   ), fn
 
 ### actual command ###
 Create.run = (userCount) ->
   # import parameters for the algorithm
-  userCount = config.create.users #how many user nodes should be created?
-  randomEdges = config.create.randomEdges
-  connectivityProbability = config.create.connectivityProbability
+  n = config.create.users #how many user nodes should be created?
+  k = config.create.randomEdges
+  p = config.create.connectivityProbability
 
   # ensure indexes for users and "knows"-edges
   db.createNodeIndex "Users", ->
     db.createRelationshipIndex "foaf:knows", ->
-      console.log "Creating user graph with #{userCount} users"
-      createSomeUsers userCount, randomEdges, connectivityProbability, (err, users) ->
+      console.log "Creating user graph with #{n} users"
+      createSomeUsers n, k, p, (err, users) ->
         if err
           console.log "!!! ERROR: Couldn't create Users: ", err
         else
-          console.log ">>> Created #{userCount} Users."
-      # - add 'random' relations between user nodes
-      # - create some content nodes
-      # - add relations between that content nodes
-      # - add relations between user nodes and content nodes
+          console.log ">>> Created #{n} Users."
 
 ### when started directly as script ###
 if process.argv[1] is __filename

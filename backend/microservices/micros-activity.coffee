@@ -17,7 +17,7 @@ activity = (req, res, next) ->
 # The Activity Filter (req.activities, req.interests, req.context, req.type)
 activity.filter = (req, res, next) ->
   for act in req.activities
-
+    console.log 'test'
   next req, res
 
 ms.$install activity

@@ -1,7 +1,7 @@
 waynamic
 ========
 
-some descriptions here...
+git clone https://github.com/Anonyfox/waynamic
 
 ## angular frontend
 

@@ -1,1 +1,8 @@
-h1 user login form here
+div(ng-controller="LoginCtrl")
+
+  h1 User Login
+
+  .row
+    .span3 Login as User with ID:
+    .span3: input(type="text", ng-model="newUser.nodeId")
+    .span1: button(ng-click="loginNewUser()") Login

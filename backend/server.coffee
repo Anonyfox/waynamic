@@ -5,6 +5,8 @@ express = require "express"
 NeDB = require "nedb"
 app = express()
 _ = require "underscore"
+neo4j = require "neo4j"
+db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
@@ -19,16 +21,22 @@ passport = require "passport"
 passportLocal = require("passport-local").Strategy
 NedbStore = require('connect-nedb-session')(express)
 userdb = new NeDB filename: "data/user.json", autoload: true
-userdb.ensureIndex {fieldname: "name", unique: true}
+userdb.ensureIndex {fieldname: "nodeId", unique: true}
 
-passport.use new passportLocal (username, password, done) ->
-  userdb.findOne {name: username}, (err, user) ->
-    return done(err) if err
-    return done(null, false, {message: "Incorrect Username"}) unless user
-    return done(null, false, {message: "Incorrect Password"}) unless user.password = password
+passport.use new passportLocal (nodeId, password, done) ->
+  console.log "passporting..."
+  db.getNodeById nodeId, (user) ->
+    return done(true, null) unless user
     return done(null, user)
+
+  # userdb.findOne {nodeId: nodeId}, (err, user) ->
+  #   return done(err) if err
+  #   return done(null, false, {message: "Incorrect nodeId"}) unless user
+  #   return done(null, user)
+# passport.serializeUser (user, done) -> done null, user._id
+# passport.deserializeUser (id, done) -> userdb.findOne {_id: id}, (err, user) -> done(err, user)
 passport.serializeUser (user, done) -> done null, user._id
-passport.deserializeUser (id, done) -> userdb.findOne {_id: id}, (err, user) -> done(err, user)
+passport.deserializeUser (id, done) -> db.getNodeById nodeId, (user) -> done(null, user)
 
 #####################
 ### CONFIGURATION ###
@@ -107,21 +115,12 @@ reco = user.interests -> user.sfriends -> filter -> fit -> router.finish
 ### PUBLIC ROUTES ###
 #####################
 
-sanitizeUser = (obj) -> _.pick(obj, "_id", "name", "created_at")
+sanitizeUser = (obj) -> _.pick(obj, "_id", "firstName", "lastName", "createdAt", "nodeId")
 auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
 
 app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
 app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
 app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
-app.post "/register", (req, res) ->
-  userdb.findOne {name: req.body.username}, (err, doc) ->
-    if err or doc
-      err or= {error: "Username already exists!"}
-      res.json 500, err
-    else
-      userdb.insert {name: req.body.username, password: req.body.password, created_at: new Date()}, (err, doc) ->
-        req.login doc, (err) ->
-          res.json sanitizeUser doc
 app.get "/test", (req, res) -> res.json req.user
 
 # --- media api routes ---------------------------------------------------------

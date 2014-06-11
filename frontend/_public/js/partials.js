@@ -12,7 +12,18 @@ angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/login.html', [
 '',
-'<h1>user login form here</h1>',''].join("\n"));
+'<div ng-controller="LoginCtrl">',
+'  <h1>User Login</h1>',
+'  <div class="row">',
+'    <div class="span3">Login as User with ID:</div>',
+'    <div class="span3">',
+'      <input type="text" ng-model="newUser.nodeId">',
+'    </div>',
+'    <div class="span1">',
+'      <button ng-click="loginNewUser()">Login</button>',
+'    </div>',
+'  </div>',
+'</div>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/logout.html', [
@@ -24,13 +35,6 @@ angular.module('partials', [])
 '',
 '<ul class="nav">',
 '  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
-'  <li ng-class="getClass(\'/profile\')"><a ng-href="#/profile"><i class="fa fa-user"></i> Profile</a></li>',
-'  <li ng-class="getClass(\'/import\')"><a ng-href="#/import"><i class="fa fa-exchange"></i> Import</a></li>',
-'</ul>',
-'<ul class="nav pull-right">',
-'  <li ng-class="getClass(\'/register\')"><a ng-href="#/register"><i class="fa fa-pencil"></i> Register</a></li>',
-'  <li ng-class="getClass(\'/login\')"><a ng-href="#/login"><i class="fa fa-sign-in"></i> Login</a></li>',
-'  <li ng-class="getClass(\'/logout\')"><a ng-href="#/logout"><i class="fa fa-sign-out"></i> Logout</a></li>',
 '</ul>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {

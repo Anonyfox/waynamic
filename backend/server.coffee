@@ -140,7 +140,7 @@ app.get '/picturesInit', (req, res) ->
   Flickr.cached limit:limit, random:true, (err, pictures) ->
     result.push pictures
     error = err if err
-  return res.end err.message if err
+  return res.end error.message if error
   return res.json result
 
 # returns 9 top pictures of the last year

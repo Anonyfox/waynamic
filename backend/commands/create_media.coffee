@@ -1,14 +1,10 @@
 #!/usr/bin/env coffee
 CreateMedia = exports? and exports or @CreateMedia = {}
 
-neo4j = require 'neo4j'
-db = new neo4j.GraphDatabase 'http://localhost:7474'
-
 AddMedia = require '../lib/add_media'
+Feedback = require '../lib/feedback'
 MediaApi = require '../lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
-Youtube = MediaApi.Youtube()
-iTunes = MediaApi.iTunes()
 
 createSomePictures = (limit) ->
   Flickr.cached limit:limit, (err, pictures) ->
@@ -17,6 +13,20 @@ createSomePictures = (limit) ->
       # console.log ">>> Created #{pictures.length} Users."
 
 createSomeInterestes = ->
+  # for user in users …
+  Flickr.cached limit:5, random:true, (err, result) ->
+    for picture of result
+      Feedback.click userID, 'picture', url:picture.url, (err) -> console.log "ERROR, could not create interest"
+
+
+cypher = """
+  START user=node({userID})
+  MATCH (user)-[:Like]->(items)
+  RETURN items
+  """
+db.query cypher, userID:user, cb
+
+
 
 
 

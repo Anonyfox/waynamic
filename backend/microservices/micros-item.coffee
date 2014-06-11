@@ -1,5 +1,7 @@
 ## Libs
 
+_ = require 'underscore'
+
 ## Code
 
 MicroService = require('micros').MicroService
@@ -11,9 +13,18 @@ item = (req, res, next) ->
   next req, res
 
 # Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count
+# Aggregate each recommendation set to master list
 item.aggregate = (req, res, next) ->
-  console.log 'aggregate'
-  next req[0], res[0]
+  res = { recommendations: [] }
+  for friend in req
+    for recommendation in friend.recommendations
+      position = 0
+      if position = _.find res.recommendations, (rec) -> rec.item is recommendation.item
+        res.recommendations[position].quality = res.recommendations[position].quality
+      else
+        res.recommendations.push recommendation
+  _.sortBy res.recommendations, (rec) -> rec.quality
+  next req[0], res
 
 ms.$install item
 

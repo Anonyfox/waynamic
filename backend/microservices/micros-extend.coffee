@@ -8,7 +8,8 @@ ms.$set 'api', 'ws'
 
 # Extends the result with additional items throught the social graph: req.interests
 extend = (req, res, next) ->
-  console.log 'interests'
+  if res.recommendation < req.count
+
   next req, res
 
 ms.$install extend

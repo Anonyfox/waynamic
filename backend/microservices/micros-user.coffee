@@ -55,6 +55,9 @@ user.sfriends = (req, res, next) ->
       nreq.user = friend
       reqres.push nreq
     reqres.push res
+    if result.length is 0
+      next.chain.pop()    # Pop the friends out
+      next.chain.pop()    # Pop the aggregate out
     next.apply @, reqres
 
 # The Activities from a user: req.user

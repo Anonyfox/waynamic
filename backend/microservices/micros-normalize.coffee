@@ -6,7 +6,7 @@ MicroService = require('micros').MicroService
 ms = new MicroService 'normalize'
 ms.$set 'api', 'ws'
 
-# Calculate normalization: req.recommendations, rec.activities
+# Calculate normalization: req.recommendations, req.activities
 normalize = (req, res, next) ->
   console.log 'normalize'
   next req, res

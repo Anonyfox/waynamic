@@ -95,8 +95,8 @@ generate_router_key = (req) ->
 
 # --- Setup Chains -------------------------------------------------------------
 
-fdbk = 1
-inte = interests -> router.finish
+# fdbk = 1
+# inte = interests -> router.finish
 
 # Empfehlungen basierend auf den Aktivitäten der Freunde
 filter = new Splitter user.activities -> activity.filter -> normalize

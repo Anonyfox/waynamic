@@ -1,5 +1,8 @@
 ## Libs
 
+neo4j = require 'neo4j'
+db = new neo4j.GraphDatabase 'http://localhost:7474'
+
 ## Code
 
 MicroService = require('micros').MicroService
@@ -13,7 +16,8 @@ activity = (req, res, next) ->
 
 # The Activity Filter (req.activities, req.interests, req.context, req.type)
 activity.filter = (req, res, next) ->
-  console.log 'filter'
+  for act in req.activities
+
   next req, res
 
 ms.$install activity

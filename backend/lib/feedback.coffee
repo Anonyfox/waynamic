@@ -3,6 +3,7 @@ Feedback = exports? and exports or @Feedback = {}
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
+# Feedback.click userID, 'picture', url:'flickrwhatever', (err) ->
 Feedback.click = (user, mediatype, media, cb) ->
   switch mediatype
     when 'picture' then Picture user, media, +1, 'Like', cb

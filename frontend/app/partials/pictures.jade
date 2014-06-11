@@ -4,5 +4,5 @@ div(ng-controller="PicturesCtrl")
       .thumbnail
         img(src="{{picture.url}}", alt="", ng-click="nextPicturesByUrl(picture.url)", style="cursor: pointer; height:240px; width:360px;")
         h3 {{picture.title}}
-        p 
-          button.btn.btn-link(ng-click="nextPicturesByTag(tag)", ng-repeat="tag in picture.tags") {{tag}}
+        //- p
+        //-   button.btn.btn-link(ng-click="nextPicturesByTag(tag)", ng-repeat="tag in picture.tags") {{tag}}

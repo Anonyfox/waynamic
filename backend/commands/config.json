@@ -1,8 +1,8 @@
 {
   "create": {
-    "users": 10,
+    "users": 100,
     "randomEdges": 1,
-    "connectivityProbability": 0.3
+    "connectivityProbability": 0.2
   },
   "clear": {
 

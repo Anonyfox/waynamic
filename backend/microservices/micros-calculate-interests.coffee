@@ -15,6 +15,8 @@ interests = (req, res, next, metatag) ->
     ORDER BY likes DESC;
     """
   db.query cypher, userID:req.user, metatag:metatag (err, result) ->
+    console.log result
+    # result = for item in result
     normalize result
     combine result
     res[metatag] = result

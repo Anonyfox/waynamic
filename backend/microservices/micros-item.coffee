@@ -19,8 +19,9 @@ item.aggregate = (req, res, next) ->
   for friend in req
     for recommendation in friend.recommendations
       position = 0
-      if position = _.find res.recommendations, (rec) -> rec.item is recommendation.item
-        res.recommendations[position].quality = res.recommendations[position].quality
+      if (position = _.find res.recommendations, (rec) -> rec.item is recommendation.item)
+        if recommendation.item.quality > res.recommendations[position].quality
+          res.recommendations[position].quality = recommendation.item.quality
       else
         res.recommendations.push recommendation
   _.sortBy res.recommendations, (rec) -> rec.quality

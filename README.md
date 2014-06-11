@@ -51,6 +51,7 @@ git clone https://github.com/Anonyfox/waynamic
 
 * explore api proxy
   * [pictures from flickr](http://localhost:4343/pictures?keywords=forest,beach)
+  * [top pictures from flickr for trainigset](http://localhost:4343/pictures/trainingset)
   * [videos from youtube](http://localhost:4343/videos?searchstring=coffeescript)
   * [movies from itunes](http://localhost:4343/movies?searchstring=matrix)
   * [music from itunes](http://localhost:4343/music?searchstring=matrix)

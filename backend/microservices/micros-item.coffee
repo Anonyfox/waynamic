@@ -10,10 +10,10 @@ item = (req, res, next) ->
   console.log 'item'
   next req, res
 
-# Gather
-item.aggregate = (reg, res, next) ->
+# Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count
+item.aggregate = (req, res, next) ->
   console.log 'aggregate'
-  next req, res
+  next req[0], res[0]
 
 ms.$install item
 

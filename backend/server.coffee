@@ -91,7 +91,7 @@ router.$install runtime
 router.$listen -> console.log "Started routing service on port 4500"
 
 generate_router_key = (req) ->
-  "{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
+  "#{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
 
 # --- Setup Chains -------------------------------------------------------------
 
@@ -99,9 +99,9 @@ fdbk = 1
 inte = interests -> router.finish
 
 # Empfehlungen basierend auf den Aktivitäten der Freunde
-#filter = new Splitter user.activities -> activity.filter
-#fit = item.aggregate -> extend
-#reco = user.interests -> user.friends -> filter -> fit -> prediction -> router.finish
+filter = new Splitter user.activities -> activity.filter -> normalize
+fit = item.aggregate -> extend
+reco = user.interests -> user.sfriends -> filter -> fit -> router.finish
 
 #####################
 ### PUBLIC ROUTES ###
@@ -163,13 +163,18 @@ app.get '/music', (req,res) ->
 
 app.get '/recommendations', (req,res) ->
   # Start the MicroChain
-  key = do generate_router_key
-  console.log key
-  request = {}
-  request.key = key
+  key = generate_router_key req
+  # Set request paramezers
+  request =
+    key: key
+    type: req.body.type
+    context: req.body.context
+    count: req.body.count
   # Register Callback
   register[key] = (data) -> res.json data
-  setTimeout (-> reco.exec request), 0
+  cb = ->
+    reco.exec request
+  setTimeout cb, 0
 
 ####################
 ### START SERVER ###

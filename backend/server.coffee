@@ -134,6 +134,16 @@ app.get '/pictures', (req, res) ->
     return res.end err.message if err
     return res.json result
 
+app.get '/picturesInit', (req, res) ->
+  limit = 9
+  result = []
+  error = false
+  Flickr.cached limit:limit, random:true, (err, pictures) ->
+    result.push pictures
+    error = err if err
+  return res.end err.message if err
+  return res.json result
+
 # returns 9 top pictures of the last year
 app.get '/pictures/trainingset', (req, res) ->
   Flickr.hot limit:9, (err, result) ->

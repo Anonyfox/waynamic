@@ -20,14 +20,14 @@ AddMedia.pictures = (pictures, cb) ->
       tags: picture.tags
     cypher = """
       MERGE (i:Picture {url:{url}})
-      ON CREATE
-        SET i.title = {title}
-        SET i.created = timestamp()
+      ON CREATE SET
+        i.title = {title},
+        i.created = timestamp()
         FOREACH (tag IN {tags} | MERGE (t:Tag {name:tag}) MERGE (i)-[:Tag]->(t))
       RETURN i
       """
     db.query cypher, params, cb
 
-  async.eachSeries pictures, ((picture, next) ->
-    create picture, (err, picture) -> next err, picture
+  async.eachSeries pictures, ((picture, cb) ->
+    create picture, cb
     ), cb

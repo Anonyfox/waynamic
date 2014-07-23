@@ -30,8 +30,8 @@ user.interests = (req, res, next, metatag) ->
   metatag = 'dc:keyword' # Globalized
   cypher = """
     START user=node({userID})
-    MATCH (user)-[l:Like]->(:Item)-[:metatag]->(metavalue)
-    MATCH (user)-[d:Dislike]->(:Item)-[:metatag]->(metavalue)
+    MATCH (user)-[l:like]->(:Item)-[:metatag]->(metavalue)
+    MATCH (user)-[d:dislike]->(:Item)-[:metatag]->(metavalue)
     RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
     ORDER BY likes DESC;
     """

@@ -25,10 +25,11 @@ createSomePictures = (limit, cb) ->
         tags: picture.tags
       cypher = """
         MERGE (i:Picture {url:{url}})
-        ON CREATE SET
-          i.title = {title},
-          i.created = timestamp()
-          FOREACH (tag IN {tags} | MERGE (t:Tag {name:tag}) MERGE (i)-[:Tag]->(t))
+        ON CREATE SET i.title = {title}, i.created = timestamp()
+        FOREACH (tagname IN {tags} |
+          MERGE (t:Tag {name:tagname})
+          CREATE UNIQUE (i)-[:tag]->(t)
+        )
         RETURN i
         """
       db.query cypher, params, cb
@@ -39,7 +40,7 @@ createSomePictures = (limit, cb) ->
 
 clearInterests = (cb) ->
   Stopwatch.start "clear interests"
-  db.query "MATCH ()-[r:Like|Dislike]->() DELETE r;", ->
+  db.query "MATCH ()-[r:like|dislike]->() DELETE r;", ->
     Stopwatch.stop "clear interests"
     cb arguments...
 
@@ -65,14 +66,14 @@ createSomeInterests = (cb) ->
   forUsers Infinity, ((err, user) ->
     forPictures 5, (err, picture) ->
       value = 1+Math.floor(4*Math.random())
-      Feedback.feedback user.id, picture.id, value, 'Like', cb
+      Feedback.feedback user.id, picture.id, value, 'like', cb
   ), ->
     Stopwatch.stop "create interests (trainingset)"
 
 
 CreateMedia.run = ->
   async.series [
-    ((cb) -> createSomePictures 20, cb )
+    ((cb) -> createSomePictures 2000, cb )
   , ((cb) -> clearInterests cb )
   , ((cb) -> createSomeInterests cb )
   ], (err, res) -> console.log "ERROR: #{err}" if err

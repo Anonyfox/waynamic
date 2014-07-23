@@ -8,9 +8,8 @@ db = new neo4j.GraphDatabase 'http://localhost:7474'
 Clear.run = (user=20, complexity=0.5) ->
   console.log "deleting database..."
   cypher = """
-    START n=node(*)
-    WHERE ID(n) <> 0 
-    OPTIONAL MATCH (n)-[r]-() 
+    MATCH (n)
+    OPTIONAL MATCH (n)-[r]-()
     DELETE r,n;
   """
   db.query cypher, {}, () ->

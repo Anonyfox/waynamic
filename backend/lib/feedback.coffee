@@ -6,13 +6,13 @@ db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 Feedback.click = (userID, mediaID, cb) ->
   rating = +1
-  Feedback.feedback userID, mediaID, +1, 'Like', cb
+  Feedback.feedback userID, mediaID, +1, 'like', cb
 
 Feedback.ignore = (userID, mediaID, cb) ->
   recommendations = 9
   relevance = 0.2
   rating = relevance / recommendations
-  Feedback.feedback userID, mediaID, rating, 'Dislike', cb
+  Feedback.feedback userID, mediaID, rating, 'dislike', cb
 
 Feedback.feedback = (userID, mediaID, rating, ratingtype, cb) ->
   cypher = "START item=node({id}) RETURN labels(item) AS mediatype;"

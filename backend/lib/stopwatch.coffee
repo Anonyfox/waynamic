@@ -7,5 +7,5 @@ Stopwatch.start = (name) ->
 
 Stopwatch.stop = (name) ->
   return console.log " ◷ ERROR: no '#{name}' registered" unless times[name]
-  console.info " ◷ FINISHED #{name} after %dms", new Date() - times[name]
+  console.info " ◷ FINISHED #{name} in %dms", new Date() - times[name]
 

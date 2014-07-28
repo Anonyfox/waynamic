@@ -29,8 +29,8 @@ git clone https://github.com/Anonyfox/waynamic
   * `neo4j start`
 
 * build dataset (execute these commands in /backend directory)
-  * `npm run db:create`
   * `npm run db:clear`
+  * `npm run db:create` add users and set friendships
   * `npm run db:media` add media to database and initialize random interests
 
 * explore data if you want

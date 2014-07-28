@@ -20,7 +20,7 @@ git clone https://github.com/Anonyfox/waynamic
 ## neo4j database
 
 * install
-  * first keep shure to have installed jvm 1.7 [see wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
+  * first keep shure to have installed jvm 1.7 [wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
   * `brew install neo4j` (on osx via [homebrew](http://brew.sh))
     or otherwise install ist from [neo4j homepage](http://www.neo4j.org/download)
   * `neo4j install` (initial)
@@ -36,6 +36,7 @@ git clone https://github.com/Anonyfox/waynamic
 * explore data if you want
   * `curl -v http://localhost:7474/db/data/`
   * [http://localhost:7474/browser/](http://localhost:7474/browser/)
+  * you will find some example cypher queries in the [wiki](https://github.com/Anonyfox/waynamic/wiki/cypher-queries)
 
 ## express backend
 

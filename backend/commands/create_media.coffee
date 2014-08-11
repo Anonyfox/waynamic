@@ -12,27 +12,25 @@ Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
 Stopwatch = require '../lib/stopwatch'
 
 
-createSomePictures = (limit, cb) ->
+createPictures = (limit, cb) ->
   Stopwatch.start "load media"
   Flickr.cached limit:limit, random:true, (err, pictures) ->
     Stopwatch.stop "load media"
-
     Stopwatch.start "save media"
-    async.eachSeries pictures, ((picture, cb) ->
-      params =
+    async.eachSeries pictures, ((picture, done) ->
+      db.query """
+        MERGE (pic:Picture {url:{url}})
+        ON CREATE
+          SET pic.title = {title}, pic.created = timestamp()
+          FOREACH (tagname IN {tags} |
+            MERGE (t:Tag {name:tagname})
+            MERGE (pic)-[:tag]->(t)
+          )
+        """,
         url: picture.url
         title: picture.title
         tags: picture.tags
-      cypher = """
-        MERGE (i:Picture {url:{url}})
-        ON CREATE SET i.title = {title}, i.created = timestamp()
-        FOREACH (tagname IN {tags} |
-          MERGE (t:Tag {name:tagname})
-          CREATE UNIQUE (i)-[:tag]->(t)
-        )
-        RETURN i
-        """
-      db.query cypher, params, cb
+        , done
       ), ->
         Stopwatch.stop "save media"
         cb arguments...
@@ -40,9 +38,13 @@ createSomePictures = (limit, cb) ->
 
 clearInterests = (cb) ->
   Stopwatch.start "clear interests"
-  db.query "MATCH ()-[r:like|dislike]->() DELETE r;", ->
-    Stopwatch.stop "clear interests"
-    cb arguments...
+  async.parallel
+    likes: (done) -> db.query "MATCH (:User)-[l:like|dislike]->(:Picture|Music|Movie|Video) DELETE l", done
+    interests: (done) -> db.query "MATCH (:User)-[i:`foaf:interest`]->(:Tag) DELETE i;", done
+    , ->
+      console.log "foo"
+      Stopwatch.stop "clear interests"
+      cb arguments...
 
 
 forUsers = (limit, cb, final) ->
@@ -61,10 +63,10 @@ forPictures = (limit, cb, final) -> # DRAGONS: make random better (remove hack)
       cb err, picture.picture
     do final if final?
 
-createSomeInterests = (cb) ->
+createInterests = (amount, cb) ->
   Stopwatch.start "create interests (trainingset)"
   forUsers Infinity, ((err, user) ->
-    forPictures 5, (err, picture) ->
+    forPictures amount, (err, picture) ->
       value = 1+Math.floor(4*Math.random())
       Feedback.feedback user.id, picture.id, value, 'like', cb
   ), ->
@@ -72,11 +74,11 @@ createSomeInterests = (cb) ->
 
 
 CreateMedia.run = ->
-  async.series [
-    ((cb) -> createSomePictures 2000, cb )
-  , ((cb) -> clearInterests cb )
-  , ((cb) -> createSomeInterests cb )
-  ], (err, res) -> console.log "ERROR: #{err}" if err
+  async.series
+    pictures: (cb) -> createPictures 20, cb
+    clear_int: clearInterests
+    create_int: (cb) -> createInterests 10, cb
+    , (err, res) -> console.log "ERROR: #{err}" if err
 
 
 # ––– when started directly as script ––– npm run db:media –––

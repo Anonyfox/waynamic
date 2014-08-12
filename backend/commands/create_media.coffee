@@ -17,7 +17,7 @@ createPictures = (limit, cb) ->
   Flickr.cached limit:limit, random:true, (err, pictures) ->
     Stopwatch.stop "load media"
     Stopwatch.start "save media"
-    async.eachSeries pictures, ((picture, done) ->
+    async.eachLimit pictures, 4, (picture, done) ->
       db.query """
         MERGE (pic:Picture {url:{url}})
         ON CREATE
@@ -31,18 +31,19 @@ createPictures = (limit, cb) ->
         title: picture.title
         tags: picture.tags
         , done
-      ), ->
-        Stopwatch.stop "save media"
-        cb arguments...
+    , ->
+      Stopwatch.stop "save media"
+      cb arguments...
 
 
 clearInterests = (cb) ->
   Stopwatch.start "clear interests"
   async.parallel
-    likes: (done) -> db.query "MATCH (:User)-[l:like|dislike]->(:Picture|Music|Movie|Video) DELETE l", done
-    interests: (done) -> db.query "MATCH (:User)-[i:`foaf:interest`]->(:Tag) DELETE i;", done
+    likes: (done) ->
+      db.query "MATCH (:User)-[l:like|dislike]->() DELETE l", done
+    interests: (done) ->
+      db.query "MATCH (:User)-[i:`foaf:interest`]->(:Tag) DELETE i;", done
     , ->
-      console.log "foo"
       Stopwatch.stop "clear interests"
       cb arguments...
 
@@ -67,17 +68,20 @@ createInterests = (amount, cb) ->
   Stopwatch.start "create interests (trainingset)"
   forUsers Infinity, ((err, user) ->
     forPictures amount, (err, picture) ->
-      value = 1+Math.floor(4*Math.random())
-      Feedback.feedback user.id, picture.id, value, 'like', cb
+      rating = 1+Math.floor(3*Math.random())
+      Feedback.feedback user.id, picture.id, rating, 'like', cb
   ), ->
     Stopwatch.stop "create interests (trainingset)"
 
 
 CreateMedia.run = ->
   async.series
-    pictures: (cb) -> createPictures 20, cb
-    clear_int: clearInterests
-    create_int: (cb) -> createInterests 10, cb
+    pictures: (done) ->
+      createPictures 2000, done
+    clear_int:
+      clearInterests
+    create_int: (done) ->
+      createInterests 10, done
     , (err, res) -> console.log "ERROR: #{err}" if err
 
 

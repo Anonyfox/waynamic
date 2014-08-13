@@ -17,15 +17,17 @@ createPictures = (limit, cb) ->
   Flickr.cached limit:limit, random:true, (err, pictures) ->
     Stopwatch.stop "load media"
     Stopwatch.start "save media"
-    async.eachLimit pictures, 4, (picture, done) ->
+    async.eachLimit pictures, 1, (picture, done) ->
       db.query """
         MERGE (pic:Picture {url:{url}})
         ON CREATE
-          SET pic.title = {title}, pic.created = timestamp()
-          FOREACH (tagname IN {tags} |
-            MERGE (t:Tag {name:tagname})
+          SET pic.title = {title}, pic.created = timestamp(), pic.new = 1
+          WITH pic
+          WHERE pic.new = 1
+          UNWIND {tags} AS tagname
+            MERGE (t:Tag {name: tagname})
             MERGE (pic)-[:tag]->(t)
-          )
+          REMOVE pic.new
         """,
         url: picture.url
         title: picture.title

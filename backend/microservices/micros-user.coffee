@@ -27,12 +27,12 @@ user = (req, res, next) ->
 # Implemented from Josua
 # The Interests from a user: req.user
 user.interests = (req, res, next, metatag) ->
-  metatag = 'dc:keyword' # Globalized
+  metatag = 'Tag' # = old name --- dragons: change to dc:keyword
+  # metatag = 'dc:keyword' # Globalized
   cypher = """
     START user=node({userID})
-    MATCH (user)-[l:like]->(:Item)-[:metatag]->(metavalue)
-    MATCH (user)-[d:dislike]->(:Item)-[:metatag]->(metavalue)
-    RETURN DISTINCT metavalue, sum(l.amount) AS likes, sum(d.amount) AS dislikes
+    MATCH (User)-[i:`foaf:interest`]->(metatag:{metatag})
+    RETURN metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
     ORDER BY likes DESC;
     """
   db.query cypher, userID:req.user, metatag:metatag, (error, result) ->
@@ -45,7 +45,7 @@ user.interests = (req, res, next, metatag) ->
 user.sfriends = (req, res, next) ->
   cypher = """
     START user=node({userID})
-    MATCH (user)-[:'foaf:knows']->(users)
+    MATCH (user)-[:`foaf:knows`]->(users)
     RETURN users
     """
   db.query cypher, userID:req,user, (error, result) ->
@@ -62,6 +62,12 @@ user.sfriends = (req, res, next) ->
 
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
+  # dragons/querstion
+  # what do you want exactly and in which form do you want it?
+  # a user has the following edges:
+  #   `foaf:knows` to other `User`
+  #   `like`, `dislike` to media nodes, in this case `Picture`
+  #   `foaf:interest` to metadata, in this case `Tag` (dc:keyword coming soon)
   cypher = """
 
     """

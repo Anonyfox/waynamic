@@ -70,8 +70,7 @@ createInterests = (amount, cb) ->
   Stopwatch.start "create interests (trainingset)"
   forUsers Infinity, ((err, user) ->
     forPictures amount, (err, picture) ->
-      rating = 1+Math.floor(3*Math.random())
-      Feedback.feedback user.id, picture.id, rating, 'like', cb
+      Feedback.click user.id, picture.id, cb
   ), ->
     Stopwatch.stop "create interests (trainingset)"
 

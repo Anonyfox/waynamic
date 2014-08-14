@@ -24,20 +24,32 @@ Feedback.feedback = (userID, mediaID, rating, ratingtype, cb) ->
       when 'Music'   then Music   userID, mediaID, rating, ratingtype, cb
 
 Picture = (userID, pictureID, rating, ratingtype, cb) ->
-
-  # console.log " | #{userID} | #{pictureID} | #{rating} | #{ratingtype} |"
-  cypher = """
-    START user=node({userID}), picture=node({pictureID})
-    MERGE (user)-[r:#{ratingtype}]->(picture)
+  if ratingtype is "like" then cypher = """
+    START User=node({userID}), Picture=node({pictureID})
+    MERGE (User)-[l:like]->(Picture)
     ON CREATE SET
-      r.created = timestamp(),
-      r.updated = timestamp(),
-      r.rating = {rating}
+      l.created = timestamp(),
+      l.updated = timestamp(),
+      l.rating = {rating}
     ON MATCH SET
-      r.updated = timestamp(),
-      r.rating = r.rating + {rating};
+      l.updated = timestamp(),
+      l.rating = l.rating + {rating}
+    WITH User, Picture
+    MATCH (Picture)-[:tag]->(Tag:Tag)
+    MERGE (User)-[i:`foaf:interest`]->(Tag)
+    ON CREATE SET
+      i.created = timestamp(),
+      i.updated = timestamp(),
+      i.like = {rating},
+      i.dislike = 0
+    ON MATCH SET
+      i.updated = timestamp(),
+      i.like = i.like + {rating};
     """
-  db.query cypher, userID:userID, pictureID:pictureID, rating:rating, ratingtype:ratingtype, cb
+  else if ratingtype is "dislike" then cypher = """
+
+  """
+  db.query cypher, userID:userID, pictureID:pictureID, rating:rating, cb
 
 
 

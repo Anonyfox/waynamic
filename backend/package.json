@@ -11,7 +11,8 @@
     "tester": "./node_modules/mocha/bin/mocha --watch --growl",
     "db:create": "./node_modules/.bin/coffee ./commands/create.coffee",
     "db:clear": "./node_modules/.bin/coffee ./commands/clear.coffee",
-    "db:media": "./node_modules/.bin/coffee ./commands/create_media.coffee"
+    "db:media": "./node_modules/.bin/coffee ./commands/create_media.coffee",
+    "db:interests": "./node_modules/.bin/coffee ./commands/create_interests.coffee"
   },
   "dependencies": {
     "async": "^0.2.10",

@@ -31,7 +31,8 @@ git clone https://github.com/Anonyfox/waynamic
 * build dataset (execute these commands in /backend directory)
   * `npm run db:clear`
   * `npm run db:create` add users and set friendships
-  * `npm run db:media` add media to database and initialize random interests
+  * `npm run db:media` add some media to database
+  * `npm run db:interests` initialize random interests
 
 * explore data if you want
   * `curl -v http://localhost:7474/db/data/`

@@ -8,10 +8,12 @@ _ = require "underscore"
 neo4j = require "neo4j"
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
+Users = require './lib/users'
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
 Youtube = MediaApi.Youtube()
 iTunes = MediaApi.iTunes()
+
 
 ########################
 ### AUTHENTIFICATION ###
@@ -82,6 +84,7 @@ Micros.set 'ms_folder', 'microservices'
 Micros.set 'start_port', '4501'
 Micros.spawn (service) -> eval "#{service.$name} = service"
 
+
 # --- Routing Service -----------------------------------------------------------
 
 router = new MicroService 'router'
@@ -123,7 +126,23 @@ app.post "/login", passport.authenticate('local'), (req, res) -> res.json saniti
 app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
 app.get "/test", (req, res) -> res.json req.user
 
+
 # --- media api routes ---------------------------------------------------------
+
+app.get '/users', (req, res) ->
+  Users.all (err, result) ->
+    return res.end err.message if err
+    return res.json result
+
+app.get '/users/:id', (req, res) ->
+  Users.one req.params.id, (err, result) ->
+    return res.end err.message if err
+    return res.json result
+
+# here be dragons:
+# app.get '/pictures'
+# app.post '/pictures/feedback'
+
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->

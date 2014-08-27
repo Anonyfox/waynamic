@@ -47,8 +47,27 @@ Picture = (userID, pictureID, rating, ratingtype, cb) ->
       i.like = i.like + {rating};
     """
   else if ratingtype is "dislike" then cypher = """
-
-  """
+    START User=node({userID}), Picture=node({pictureID})
+    MERGE (User)-[d:dislike]->(Picture)
+    ON CREATE SET
+      d.created = timestamp(),
+      d.updated = timestamp(),
+      d.rating = {rating}
+    ON MATCH SET
+      d.updated = timestamp(),
+      d.rating = d.rating + {rating}
+    WITH User, Picture
+    MATCH (Picture)-[:tag]->(Tag:Tag)
+    MERGE (User)-[i:`foaf:interest`]->(Tag)
+    ON CREATE SET
+      i.created = timestamp(),
+      i.updated = timestamp(),
+      i.like = 0,
+      i.dislike = {rating}
+    ON MATCH SET
+      i.updated = timestamp(),
+      i.dislike = i.dislike + {rating};
+    """
   db.query cypher, userID:userID, pictureID:pictureID, rating:rating, cb
 
 

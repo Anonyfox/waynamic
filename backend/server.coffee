@@ -1,18 +1,23 @@
 #!/usr/bin/env coffee
 
-require "coffee-script"
-express = require "express"
-NeDB = require "nedb"
+require 'coffee-script'
+_ = require 'underscore'
+async = require 'async'
+
+express = require 'express'
 app = express()
-_ = require "underscore"
-neo4j = require "neo4j"
+
+NeDB = require 'nedb'
+neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 Users = require './lib/users'
+Feedback = require './lib/feedback'
+
 MediaApi = require './lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
-Youtube = MediaApi.Youtube()
-iTunes = MediaApi.iTunes()
+Youtube = do MediaApi.Youtube
+iTunes = do MediaApi.iTunes
 
 
 ########################
@@ -127,7 +132,7 @@ app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.se
 app.get "/test", (req, res) -> res.json req.user
 
 
-# --- media api routes ---------------------------------------------------------
+# --- user routes --------------------------------------------------------------
 
 app.get '/users', (req, res) ->
   Users.all (err, result) ->
@@ -139,10 +144,23 @@ app.get '/users/:id', (req, res) ->
     return res.end err.message if err
     return res.json result
 
-# here be dragons:
-# app.get '/pictures'
-# app.post '/pictures/feedback'
 
+# --- recommendation routes ----------------------------------------------------
+
+# expects post body: {click:0000, ignore:[0000,0000]}
+# curl -X POST -d click=0 -d ignore=1 -d ignore=2 http://localhost:4343/users/155040/pictures/
+app.post '/users/:id/pictures', (req, res) ->
+  Feedback.click req.params.id, req.body.click
+  Feedback.ignore req.params.id, pic for pic in req.body.ignore
+  res.redirect '.'
+
+
+app.get '/users/:id/pictures', (req, res) ->
+  # here be dragons
+  res.json note: "#{req.params.id} under construction"
+
+
+# --- media proxies ------------------------------------------------------------
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->

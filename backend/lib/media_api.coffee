@@ -44,20 +44,13 @@ yyyymmdd = (date) ->
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
 
-  # opts.limit=9   opts.random=true
-  # available:  05-08.07.14
+  # cached are hot pics from:   05.07.14 - 08.07.14
   Flickr.cached = (opts, cb) ->
-    return unless cb
     opts.limit ?= Infinity
-    opts.random ?= true
     pictures = require '../data/flickr_top.json'
-    if opts.random then pictures.sort -> Math.random() - 0.5
     return cb null, pictures.slice(0,opts.limit)
 
-  # opts.limit=9   opts.date='2014-02-20'
   Flickr.hot = (opts, cb) ->
-    console.log  opts
-    return unless cb
     opts.limit ?= 9
     opts.random ?= true
     opts.date ?= new Date()
@@ -65,11 +58,7 @@ MediaApi.Flickr = (api_key) ->
     get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
       collect err, result, opts.limit, cb
 
-  # opts.limit=9   opts.keywords=['sonne','strand','meer']
   Flickr.find = (opts, cb) ->
-    # return Flickr.hot limit:1, date:new Date(2014,6-1,9), cb # api hack: hot pictures
-    # return Flickr.cached limit:9, cb                         # api hack: cached pictures
-    return unless cb
     opts.limit ?= 9
     opts.keywords ?= []
     tags = opts.keywords.join ','

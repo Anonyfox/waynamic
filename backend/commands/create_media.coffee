@@ -1,41 +1,21 @@
 #!/usr/bin/env coffee
 CreateMedia = exports? and exports or @CreateMedia = {}
 
-_ = require "underscore"
 async = require 'async'
-neo4j = require 'neo4j'
-db = new neo4j.GraphDatabase 'http://localhost:7474'
 
+Stopwatch = require '../lib/stopwatch'
+Media = require '../lib/media'
 MediaApi = require '../lib/media_api'
 Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
-Stopwatch = require '../lib/stopwatch'
-
 
 createPictures = (limit, cb) ->
-  Stopwatch.start "load media"
-  Flickr.cached limit:limit, random:true, (err, pictures) ->
-    Stopwatch.stop "load media"
-    Stopwatch.start "save media"
-    async.eachLimit pictures, 1, (picture, done) ->
-      db.query """
-        MERGE (pic:Picture {url:{url}})
-        ON CREATE
-          SET pic.title = {title}, pic.created = timestamp(), pic.new = 1
-          WITH pic
-          WHERE pic.new = 1
-          UNWIND {tags} AS tagname
-            MERGE (t:Tag {name: tagname})
-            MERGE (pic)-[:tag]->(t)
-          REMOVE pic.new
-        """,
-        url: picture.url
-        title: picture.title
-        tags: picture.tags
-        , done
-    , ->
-      Stopwatch.stop "save media"
+  Stopwatch.start 'load media'
+  Flickr.cached limit:limit, (err, pictures) ->
+    Stopwatch.stop 'load media'
+    Stopwatch.start 'save media'
+    async.eachLimit pictures, 1, Media.add_picture, ->
+      Stopwatch.stop 'save media'
       cb arguments...
-
 
 CreateMedia.run = ->
   createPictures 2000, (err, res) ->

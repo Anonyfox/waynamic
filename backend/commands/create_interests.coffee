@@ -1,7 +1,6 @@
 #!/usr/bin/env coffee
 CreateInterests = exports? and exports or @CreateInterests = {}
 
-_ = require "underscore"
 async = require 'async'
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
@@ -9,17 +8,11 @@ db = new neo4j.GraphDatabase 'http://localhost:7474'
 Feedback = require '../lib/feedback'
 Stopwatch = require '../lib/stopwatch'
 
-
 clearInterests = (cb) ->
   Stopwatch.start "clear interests"
-  async.parallel
-    likes: (done) ->
-      db.query "MATCH (:User)-[l:like|dislike]->() DELETE l", done
-    interests: (done) ->
-      db.query "MATCH (:User)-[i:`foaf:interest`]->(:Tag) DELETE i;", done
-    , ->
-      Stopwatch.stop "clear interests"
-      cb arguments...
+  db.query "MATCH (:User)-[r:like|dislike|`foaf:interest`]->() DELETE r", ->
+    Stopwatch.stop "clear interests"
+    cb arguments...
 
 forUsers = (limit, cb, final) ->
   cypher = "MATCH (user:User) RETURN user LIMIT {limit};"

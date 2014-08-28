@@ -154,7 +154,6 @@ app.post '/users/:id/pictures', (req, res) ->
   Feedback.ignore req.params.id, pic for pic in req.body.ignore
   res.redirect '.'
 
-
 app.get '/users/:id/pictures', (req, res) ->
   # here be dragons
   res.json note: "#{req.params.id} under construction"

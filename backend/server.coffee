@@ -20,9 +20,8 @@ Youtube = do MediaApi.Youtube
 iTunes = do MediaApi.iTunes
 
 
-########################
-### AUTHENTIFICATION ###
-########################
+
+# --- authentification ---------------------------------------------------------
 
 passport = require "passport"
 passportLocal = require("passport-local").Strategy
@@ -45,9 +44,9 @@ passport.use new passportLocal (nodeId, password, done) ->
 passport.serializeUser (user, done) -> done null, user._id
 passport.deserializeUser (id, done) -> db.getNodeById nodeId, (user) -> done(null, user)
 
-#####################
-### CONFIGURATION ###
-#####################
+
+
+# --- configuration ------------------------------------------------------------
 
 app.configure ->
   app.enable 'trust proxy' # i am behind a nginx !
@@ -75,9 +74,9 @@ app.configure 'production', ->
   app.use express.staticCache()
   app.use express.static "#{__dirname}/../frontend/_public", {maxAge: week}
 
-###########################
-### Setup MicroServices ###
-###########################
+
+
+# --- Setup MicroServices ------------------------------------------------------
 
 Micros = require 'micros'
 Splitter = Micros.Splitter
@@ -88,6 +87,7 @@ register = {}
 Micros.set 'ms_folder', 'microservices'
 Micros.set 'start_port', '4501'
 Micros.spawn (service) -> eval "#{service.$name} = service"
+
 
 
 # --- Routing Service -----------------------------------------------------------
@@ -109,6 +109,8 @@ router.$listen -> console.log "Started routing service on port 4500"
 generate_router_key = (req) ->
   "#{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
 
+
+
 # --- Setup Chains -------------------------------------------------------------
 
 # fdbk = 1
@@ -119,9 +121,9 @@ filter = new Splitter user.activities -> activity.filter -> normalize
 fit = item.aggregate -> extend
 reco = user.interests -> user.sfriends -> filter -> fit -> router.finish
 
-#####################
-### PUBLIC ROUTES ###
-#####################
+
+
+# --- user routes --------------------------------------------------------------
 
 sanitizeUser = (obj) -> _.pick(obj, "_id", "firstName", "lastName", "createdAt", "nodeId")
 auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
@@ -130,9 +132,6 @@ app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
 app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
 app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
 app.get "/test", (req, res) -> res.json req.user
-
-
-# --- user routes --------------------------------------------------------------
 
 app.get '/users', (req, res) ->
   Users.all (err, result) ->
@@ -143,6 +142,7 @@ app.get '/users/:id', (req, res) ->
   Users.one req.params.id, (err, result) ->
     return res.end err.message if err
     return res.json result
+
 
 
 # --- recommendation routes ----------------------------------------------------
@@ -159,6 +159,7 @@ app.get '/users/:id/pictures', (req, res) ->
   res.json note: "#{req.params.id} under construction"
 
 
+
 # --- media proxies ------------------------------------------------------------
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
@@ -169,18 +170,9 @@ app.get '/pictures', (req, res) ->
     return res.end err.message if err
     return res.json result
 
-app.get '/picturesInit', (req, res) ->
-  limit = 9
-  result = []
-  error = false
-  Flickr.cached limit:limit, random:true, (err, pictures) ->
-    result.push pictures
-    error = err if err
-  return res.end error.message if error
-  return res.json result
-
-# returns 9 top pictures of the last year
-app.get '/pictures/trainingset', (req, res) ->
+# query:  http://localhost:4343/pictures/hot
+# trainingset: returns 9 top pictures of the last year
+app.get '/pictures/hot', (req, res) ->
   Flickr.hot limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
@@ -206,6 +198,10 @@ app.get '/music', (req,res) ->
     return res.end err.message if err
     return res.json result
 
+
+
+# ------------------------------------------------------------------------------
+
 app.get '/recommendations', (req,res) ->
   # Start the MicroChain
   key = generate_router_key req
@@ -221,9 +217,9 @@ app.get '/recommendations', (req,res) ->
     reco.exec request
   setTimeout cb, 0
 
-####################
-### START SERVER ###
-####################
+
+
+# --- start server  ------------------------------------------------------------
 
 server = app.listen 4343
 console.log "Listening on port 4343"

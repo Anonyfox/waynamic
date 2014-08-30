@@ -82,7 +82,7 @@ MediaApi.Flickr = (api_key) ->
     opts.limit ?= 9
     opts.random ?= true
     opts.date ?= new Date()
-    opts.date = new Date(opts.date.setDate(opts.date.getDate()-parseInt(Math.random()*365))) if opts.random
+    opts.date = new Date Date.now() - 1000*60*60*24 * parseInt(Math.random()*356) if opts.random
     get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
       collect err, result, opts.limit, cb
 

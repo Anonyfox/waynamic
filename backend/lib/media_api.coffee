@@ -73,10 +73,15 @@ MediaApi.Flickr = (api_key) ->
     pictures = JSON.readFileSync '../data/flickr_top.json'
     pictures = _.filter pictures, (picture) -> not cb picture
     JSON.writeFileSync '../data/flickr_top.json', pictures
-    do next
+    do next if next
 
   Flickr.cache.count = ->
     (JSON.readFileSync '../data/flickr_top.json').length
+
+  # remove pictures that have insuffizient tags
+  Flickr.cache.clean = ->
+    min = 3
+    Flickr.cache.rm (picture) -> picture.tags.length < min
 
   Flickr.hot = (opts, cb) ->
     opts.limit ?= 9

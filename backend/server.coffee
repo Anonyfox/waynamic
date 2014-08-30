@@ -155,8 +155,17 @@ app.post '/users/:id/pictures', (req, res) ->
   res.redirect '.'
 
 app.get '/users/:id/pictures', (req, res) ->
-  # here be dragons
-  res.json note: "#{req.params.id} under construction"
+  Flickr.hot limit:3, (err, trainingset) ->
+    return res.end err.message if err
+    # Flickr.cache.add trainingset
+    tmp =
+      title: 'under construction'
+      url: 'img/logo_construction.png'
+      tags: {}
+      name: 'vname name'
+    recommendations = [tmp, tmp, tmp, tmp, tmp, tmp]
+    # here be dragons
+    return res.json trainingset: trainingset, recommendations: recommendations
 
 
 

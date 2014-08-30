@@ -8,7 +8,7 @@ fs = require 'fs'
 # --- helper -------------------------------------------------------------------
 
 querystring = require 'querystring'
-http = require 'http'
+https = require 'https'
 
 JSON.readFileSync = (path) ->
   if path[0] isnt '/' then path = __dirname + '/' + path
@@ -23,7 +23,7 @@ JSON.writeFileSync = (path, data) ->
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
   console.log "url ---> #{url}"
-  http.get url, (res) ->
+  https.get url, (res) ->
     data = ''
     res.on 'data', (chunk) -> data += chunk
     res.on 'end', ->
@@ -33,14 +33,13 @@ request = (url, parameters..., cb) ->
         return cb err
       cb null, json
 
-http.head = (url, cb) ->
-  splitted = url.match /^http:\/\/(.*?)(\/.*)/
+https.head = (url, cb) ->
+  splitted = url.match /^https?:\/\/(.*?)(\/.*)/
   options =
     method: 'HEAD'
     host: splitted[1]
     path: splitted[2]
-    port: 80
-  do (http.request options, cb).end
+  do (https.request options, cb).end
 
 # format date to string
 yyyymmdd = (date) ->
@@ -139,7 +138,7 @@ MediaApi.Flickr = (api_key) ->
         return cb null, _.extend(all.sizes, all.info)
 
   get = (method, opts, cb) ->
-    url = "http://api.flickr.com/services/rest/"
+    url = "https://api.flickr.com/services/rest/"
     request url, method:"flickr.#{method}", api_key:api_key, format:'json', nojsoncallback:1, opts, cb
 
   Flickr

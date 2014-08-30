@@ -2,12 +2,23 @@ MediaApi = exports? and exports or @MediaApi = {}
 
 async = require 'async'
 _ = require 'underscore'
+fs = require 'fs'
 
 
 # --- helper -------------------------------------------------------------------
 
 querystring = require 'querystring'
 http = require 'http'
+
+JSON.readFileSync = (path) ->
+  if path[0] isnt '/' then path = __dirname + '/' + path
+  raw = fs.readFileSync path, 'utf8'
+  parsed = JSON.parse raw
+  parsed
+
+JSON.writeFileSync = (path, data) ->
+  if path[0] isnt '/' then path = __dirname + '/' + path
+  fs.writeFileSync path, JSON.stringify(data, null, 2)+'\n'
 
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
@@ -17,9 +28,10 @@ request = (url, parameters..., cb) ->
     res.on 'data', (chunk) -> data += chunk
     res.on 'end', ->
       try
-        return cb null, JSON.parse data
-      catch
-        return cb new Error 'no valid json'
+        json = JSON.parse data
+      catch err
+        return cb err
+      cb null, json
 
 http.head = (url, cb) ->
   splitted = url.match /^http:\/\/(.*?)(\/.*)/
@@ -29,7 +41,6 @@ http.head = (url, cb) ->
     path: splitted[2]
     port: 80
   do (http.request options, cb).end
-
 
 # format date to string
 yyyymmdd = (date) ->
@@ -45,10 +56,27 @@ MediaApi.Flickr = (api_key) ->
   Flickr = {}
 
   # cached are hot pics from:   05.07.14 - 08.07.14
-  Flickr.cached = (opts, cb) ->
+  Flickr.cache = (opts, cb) ->
     opts.limit ?= Infinity
     pictures = require '../data/flickr_top.json'
-    return cb null, pictures.slice(0,opts.limit)
+    return cb null, pictures[0...opts.limit]
+
+  Flickr.cache.add = (new_pics) ->
+    pictures = JSON.readFileSync '../data/flickr_top.json'
+    new_pics = [new_pics] unless new_pics instanceof Array
+    for new_pic in new_pics
+      unless _.filter(pictures, (picture) -> picture.url is new_pic.url).length
+        pictures.unshift _.pick new_pic, 'url', 'title', 'tags'
+    JSON.writeFileSync '../data/flickr_top.json', pictures
+
+  Flickr.cache.rm = (cb, next) ->
+    pictures = JSON.readFileSync '../data/flickr_top.json'
+    pictures = _.filter pictures, (picture) -> not cb picture
+    JSON.writeFileSync '../data/flickr_top.json', pictures
+    do next
+
+  Flickr.cache.count = ->
+    (JSON.readFileSync '../data/flickr_top.json').length
 
   Flickr.hot = (opts, cb) ->
     opts.limit ?= 9
@@ -90,7 +118,7 @@ MediaApi.Flickr = (api_key) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
           url = (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
-          # http.head url, (res) -> # here some freezes take place
+          # http.head url, (res) -> # dragons: here some freezes take place
           #   console.log "url done"
           #   size = res.headers['content-length']
           #   return cb null, url:undefined if size < 15000
@@ -107,8 +135,7 @@ MediaApi.Flickr = (api_key) ->
 
   get = (method, opts, cb) ->
     url = "http://api.flickr.com/services/rest/"
-    glob = method:"flickr.#{method}", api_key:api_key, format:'json', nojsoncallback:1
-    request url, glob, opts, cb
+    request url, method:"flickr.#{method}", api_key:api_key, format:'json', nojsoncallback:1, opts, cb
 
   Flickr
 

@@ -10,7 +10,7 @@ Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
 
 createPictures = (limit, cb) ->
   Stopwatch.start 'load media'
-  Flickr.cached limit:limit, (err, pictures) ->
+  Flickr.cache limit:limit, (err, pictures) ->
     Stopwatch.stop 'load media'
     Stopwatch.start 'save media'
     async.eachLimit pictures, 1, Media.add_picture, ->

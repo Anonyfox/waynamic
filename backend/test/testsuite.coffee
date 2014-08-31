@@ -26,3 +26,14 @@ describe "Flickr Picture Cache", ->
     Flickr.cache.add ref_picture
     amount_after = do Flickr.cache.count
     expect( amount_after ).to.be.equal amount_before + 1
+
+
+describe "not really part of bdd – yes, i misuse the testsuite :P", ->
+  MediaApi = require '../lib/media_api'
+  Flickr = MediaApi.Flickr('0969ce0028fe08ecaf0ed5537b597f1e')
+
+  it "should clean up", ->
+    Flickr.cache.clean()
+
+  it "should log amount of pictures in cache", ->
+    console.log "pic count: " + do Flickr.cache.count

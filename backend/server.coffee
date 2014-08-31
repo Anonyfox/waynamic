@@ -157,11 +157,11 @@ app.post '/users/:id/pictures', (req, res) ->
 app.get '/users/:id/pictures', (req, res) ->
   Flickr.hot limit:3, (err, trainingset) ->
     return res.end err.message if err
-    # Flickr.cache.add trainingset
+    Flickr.cache.add trainingset
     tmp =
       title: 'under construction'
       url: 'img/logo_construction.png'
-      tags: {}
+      tags: []
       name: 'vname name'
     recommendations = [tmp, tmp, tmp, tmp, tmp, tmp]
     # here be dragons

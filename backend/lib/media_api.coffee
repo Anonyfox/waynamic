@@ -49,6 +49,38 @@ yyyymmdd = (date) ->
   "#{yyyy}-#{mm}-#{dd}"
 
 
+# --- tagfilter ----------------------------------------------------------------
+
+tagfilter = (tags) ->
+  return unless tags instanceof Array
+  tags = tagfilter.censored tags
+  tags = tagfilter.useless tags
+  tags = tagfilter.synomity tags
+  tags = tagfilter.doubles tags
+
+tagfilter.censored = (tags) ->
+  censored = require '../data/tags_censored'
+  if _.reduce tags, ((memo, curr) -> memo or curr in censored), false
+    return []
+  tags
+
+tagfilter.synomity = (tags) ->
+  synomity = require '../data/tags_synomity'
+  _.map tags, (tag) -> synomity[tag] or tag
+
+tagfilter.useless = (tags) ->
+  useless = require '../data/tags_useless'
+  tags = _.filter tags, (tag) -> not (tag in useless or /[\d\W]/.test tag or tag.length > 15)
+  tags
+
+tagfilter.doubles = (tags) ->
+  tester = {}
+  tags = _.filter tags, (tag) ->
+    return false if tester[tag]?
+    tester[tag] = true
+  tags
+
+
 # --- flickr -------------------------------------------------------------------
 
 MediaApi.Flickr = (api_key) ->
@@ -57,20 +89,24 @@ MediaApi.Flickr = (api_key) ->
   # cached are hot pics from:   05.07.14 - 08.07.14
   Flickr.cache = (opts, cb) ->
     opts.limit ?= Infinity
-    pictures = require '../data/flickr_top.json'
+    pictures = require '../data/flickr_top'
     return cb null, pictures[0...opts.limit]
 
   Flickr.cache.add = (new_pics) ->
     pictures = JSON.readFileSync '../data/flickr_top.json'
+    count = pictures.length
     new_pics = [new_pics] unless new_pics instanceof Array
     for new_pic in new_pics
       unless _.filter(pictures, (picture) -> picture.url is new_pic.url).length
         pictures.unshift _.pick new_pic, 'url', 'title', 'tags'
+    console.log (pictures.length-count) + ' picture(s) added to cache'
     JSON.writeFileSync '../data/flickr_top.json', pictures
 
   Flickr.cache.rm = (cb, next) ->
     pictures = JSON.readFileSync '../data/flickr_top.json'
+    count = pictures.length
     pictures = _.filter pictures, (picture) -> not cb picture
+    console.log (count-pictures.length) + ' picture(s) removed from cache'
     JSON.writeFileSync '../data/flickr_top.json', pictures
     do next if next
 
@@ -79,8 +115,10 @@ MediaApi.Flickr = (api_key) ->
 
   # remove pictures that have insuffizient tags
   Flickr.cache.clean = ->
-    min = 3
-    Flickr.cache.rm (picture) -> picture.tags.length < min
+    Flickr.cache.rm (picture) ->
+      picture.tags = tagfilter picture.tags
+      picture.tags.length < 3
+
 
   Flickr.hot = (opts, cb) ->
     opts.limit ?= 9
@@ -105,7 +143,8 @@ MediaApi.Flickr = (api_key) ->
       id = (do result.photos.photo.shift).id
       crawl_one id, (err, picture) ->
         return cb err if err
-        if picture.url?
+        picture.tags = tagfilter picture.tags
+        if picture.url? and picture.tags.length >=3
           pictures.push picture
           return cb null, pictures if pictures.length is amount
         else
@@ -122,11 +161,13 @@ MediaApi.Flickr = (api_key) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
           url = (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
-          # http.head url, (res) -> # dragons: here some freezes take place
-          #   console.log "url done"
-          #   size = res.headers['content-length']
-          #   return cb null, url:undefined if size < 15000
-          return cb null, url: url
+          # dragons: here some freezes have taken place in an eralier version
+          # maybe i have already fixed it … but keep going to observe this!
+          # or it was not my fault but flickr's
+          https.head url, (res) ->
+            size = res.headers['content-length']
+            return cb null, url: undefined if size < 15000
+            return cb null, url: url
       info: (cb) ->
         get 'photos.getInfo', photo_id:id, (err, result) ->
           return cb err if err

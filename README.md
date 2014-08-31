@@ -52,9 +52,18 @@ git clone https://github.com/Anonyfox/waynamic
     * `nodemon server.coffee` (restart if files have changed)
     * `coffee server.coffee` (start once)
 
-* explore api proxy
+* test (execute these commands in /backend directory)
+    * `npm test` (run test once)
+    * `npm run tester` (run test an watch for changes)
+
+* explore proxy api
     * [pictures from flickr](http://localhost:4343/pictures?keywords=forest,beach)
-    * [top pictures from flickr for trainigset](http://localhost:4343/pictures/trainingset)
+    * [top pictures from flickr for trainigset](http://localhost:4343/pictures/hot)
     * [videos from youtube](http://localhost:4343/videos?searchstring=coffeescript)
     * [movies from itunes](http://localhost:4343/movies?searchstring=matrix)
     * [music from itunes](http://localhost:4343/music?searchstring=matrix)
+
+* explore api used by frontend
+    * [all users](http://localhost:4343/users)
+    * [one user](http://localhost:4343/users/userid) (replace userid in the url by an real userid)
+    * [recommendations for one user](http://localhost:4343/users/userid/pictures) (replace userid, feedback via post-redirect-get)

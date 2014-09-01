@@ -9,7 +9,7 @@ Feedback.click = (userID, mediaID, cb) ->
   Feedback.feedback userID, mediaID, +1, 'like', cb
 
 Feedback.ignore = (userID, mediaID, cb) ->
-  recommendations = 9
+  recommendations = 6
   relevance = 0.2
   rating = relevance / recommendations
   Feedback.feedback userID, mediaID, rating, 'dislike', cb

@@ -4,7 +4,7 @@ _ = require 'underscore'
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
-Pictures.all = -> (cb) ->
+Pictures.all = (cb) ->
   db.query """
     MATCH (Picture:Picture)-[:tag]->(Tag)
     RETURN
@@ -14,6 +14,18 @@ Pictures.all = -> (cb) ->
       collect(Tag.name) AS tags
     LIMIT {limit};
     """, limit:1000, cb
+
+Pictures.random = (limit, cb) ->
+  db.query """
+    MATCH (Picture:Picture)-[:tag]->(Tag)
+    WHERE rand()<0.1
+    RETURN
+      id(Picture) AS _id,
+      Picture.url AS url,
+      Picture.title AS title,
+      collect(Tag.name) AS tags
+    LIMIT {limit};
+    """, limit:limit, cb
 
 Pictures.one = (_id, cb) ->
   db.query """

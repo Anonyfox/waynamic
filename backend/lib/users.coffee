@@ -9,8 +9,9 @@ Users.all = (cb) ->
     RETURN
       id(User) AS _id,
       User.firstName AS firstName,
-      User.lastName AS lastName;
-    """, cb
+      User.lastName AS lastName
+    LIMIT {limit};
+    """, limit:1000, cb
 
 Users.one = (_id, cb) ->
   db.query """
@@ -20,4 +21,4 @@ Users.one = (_id, cb) ->
       id(User) AS _id,
       User.firstName AS firstName,
       User.lastName AS lastName;
-    """, userID:parseInt(_id), cb
+    """, userID:parseInt(_id), (err, result) -> cb err, result[0]

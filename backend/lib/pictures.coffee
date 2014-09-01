@@ -17,8 +17,10 @@ Pictures.all = (cb) ->
 
 Pictures.random = (limit, cb) ->
   db.query """
-    MATCH (Picture:Picture)-[:tag]->(Tag)
-    WHERE rand()<0.1
+    MATCH (Picture:Picture)
+    WHERE rand()<0.02
+    WITH Picture
+    MATCH (Picture)-[:tag]->(Tag)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,

@@ -11,23 +11,25 @@ Pictures.all = (cb) ->
       id(Picture) AS _id,
       Picture.url AS url,
       Picture.title AS title,
-      collect(Tag.name) AS tags
-    LIMIT {limit};
-    """, limit:1000, cb
+      collect(Tag.name) AS tags;
+    """, cb
 
 Pictures.random = (limit, cb) ->
   db.query """
     MATCH (Picture:Picture)
-    WHERE rand()<0.02
-    WITH Picture
+    WITH Picture, rand() AS rand
     MATCH (Picture)-[:tag]->(Tag)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,
       Picture.title AS title,
-      collect(Tag.name) AS tags
+      collect(Tag.name) AS tags,
+      rand
+    ORDER BY rand
     LIMIT {limit};
-    """, limit:limit, cb
+    """, limit:limit, (err, pictures) ->
+      delete picture.rand for picture in pictures
+      cb err, pictures
 
 Pictures.one = (_id, cb) ->
   db.query """
@@ -42,17 +44,27 @@ Pictures.one = (_id, cb) ->
       collect(Tag.name) AS tags;
   """, pictureID:parseInt(_id), (err, result) -> cb err, result[0]
 
-Pictures.add = (picture, done) ->
-  params = _.pick picture, 'url', 'title', 'tags'
-  cypher = """
-    MERGE (pic:Picture {url:{url}})
+Pictures.add = (picture, cb) ->
+  params =
+  db.query """
+    MERGE (Picture:Picture {url:{url}})
     ON CREATE
-      SET pic.title = {title}, pic.created = timestamp(), pic.new = 1
-      WITH pic
-      WHERE pic.new = 1
+      SET Picture.title = {title}, Picture.created = timestamp(), Picture.new = 1
+      WITH Picture
+      WHERE Picture.new = 1
       UNWIND {tags} AS tagname
         MERGE (t:Tag {name: tagname})
-        MERGE (pic)-[:tag]->(t)
-      REMOVE pic.new
-  """
-  db.query cypher, params, done
+        MERGE (Picture)-[:tag]->(t)
+      REMOVE Picture.new
+  """, _.pick( picture, 'url', 'title', 'tags' ), cb
+
+Pictures.get_id = (picture, cb) ->
+  db.query """
+    MATCH (Picture:Picture {url:{url}})-[:tag]->(Tag)
+    RETURN
+      id(Picture) AS _id,
+      Picture.url AS url,
+      Picture.title AS title,
+      collect(Tag.name) AS tags;
+  """, url:picture.url, cb
+

@@ -12,6 +12,7 @@ neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 Users = require './lib/users'
+Pictures = require './lib/pictures'
 Feedback = require './lib/feedback'
 
 MediaApi = require './lib/media_api'
@@ -147,25 +148,33 @@ app.get '/users/:id', (req, res) ->
 
 # --- recommendation routes ----------------------------------------------------
 
-# expects post body: {click:0000, ignore:[0000,0000]}
-# curl -X POST -d click=0 -d ignore=1 -d ignore=2 http://localhost:4343/users/155040/pictures/
+# expects response of GET /user/:id/pictures += clicked:_id
 app.post '/users/:id/pictures', (req, res) ->
-  Feedback.click req.params.id, req.body.click
-  Feedback.ignore req.params.id, pic for pic in req.body.ignore
-  res.redirect '.'
+  console.log  req.params.id, req.body.clicked
+  console.log  req.params.id, pic._id for pic in req.body.recommendations
+  Feedback.click req.params.id, req.body.clicked
+  Feedback.ignore req.params.id, pic._id for pic in req.body.recommendations
+  res.redirect ".?_id=#{req.body.clicked}"
 
+
+# http://localhost:4343/users/155040/pictures?_id=203828
 app.get '/users/:id/pictures', (req, res) ->
-  Flickr.hot limit:3, (err, trainingset) ->
-    return res.end err.message if err
-    Flickr.cache.add trainingset
-    tmp =
-      title: 'under construction'
-      url: 'img/logo_construction.png'
-      tags: []
-      name: 'vname name'
-    recommendations = [tmp, tmp, tmp, tmp, tmp, tmp]
-    # here be dragons
-    return res.json trainingset: trainingset, recommendations: recommendations
+  async.series
+    current: (cb) ->
+      return cb {} unless req.query._id
+      Pictures.one req.query._id, cb
+    recommendations: (cb) ->
+      # here be dragons - get real recommendations:
+      dummy = _id: -1, url: 'img/logo_construction.png', subtitle: 'max mustermann mag dieses Bild'
+      recommendations = [dummy, dummy, dummy, dummy, dummy, dummy]
+      cb null, recommendations
+    trainingset: (cb) ->
+      Pictures.random 3, (err, pictures) ->
+        pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
+        cb err, pictures
+    , (err, all) ->
+      return res.end err.message if err
+      return res.json all
 
 
 
@@ -182,9 +191,11 @@ app.get '/pictures', (req, res) ->
 # query:  http://localhost:4343/pictures/hot
 # trainingset: returns 9 top pictures of the last year
 app.get '/pictures/hot', (req, res) ->
-  Flickr.hot limit:9, (err, result) ->
+  Flickr.hot limit:9, (err, pictures) ->
     return res.end err.message if err
-    return res.json result
+    # Flickr.cache.add pictures
+    # async.eachLimit pictures, 1, Pictures.add
+    return res.json pictures
 
 # query:  http://localhost:4343/videos?term=coffeescript
 app.get '/videos', (req, res) ->

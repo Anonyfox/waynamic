@@ -99,14 +99,14 @@ MediaApi.Flickr = (api_key) ->
     for new_pic in new_pics
       unless _.filter(pictures, (picture) -> picture.url is new_pic.url).length
         pictures.unshift _.pick new_pic, 'url', 'title', 'tags'
-    console.log (pictures.length-count) + ' picture(s) added to cache'
+    # console.log (pictures.length-count) + ' picture(s) added to cache'
     JSON.writeFileSync '../data/flickr_top.json', pictures
 
   Flickr.cache.rm = (cb, next) ->
     pictures = JSON.readFileSync '../data/flickr_top.json'
     count = pictures.length
     pictures = _.filter pictures, (picture) -> not cb picture
-    console.log (count-pictures.length) + ' picture(s) removed from cache'
+    # console.log (count-pictures.length) + ' picture(s) removed from cache'
     JSON.writeFileSync '../data/flickr_top.json', pictures
     do next if next
 

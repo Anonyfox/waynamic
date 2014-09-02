@@ -22,7 +22,7 @@ JSON.writeFileSync = (path, data) ->
 
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
-  console.log "url ---> #{url}"
+  console.log "GET #{url}"
   https.get url, (res) ->
     data = ''
     res.on 'data', (chunk) -> data += chunk
@@ -151,8 +151,9 @@ MediaApi.Flickr = (api_key) ->
           do add_one
     available = result.photos.photo.length
     amount = Math.min limit, available
-    console.log "available: #{available}, limit: #{limit}"
-    cb new Error 'no photos returned' if amount is 0
+    console.log "pictures available: #{available}, limit: #{limit}"
+    cb new Error 'no photos available' if available is 0
+    cb new Error 'no photos gequested' if amount is 0
     async.times amount, add_one
 
   crawl_one = (id, cb) ->

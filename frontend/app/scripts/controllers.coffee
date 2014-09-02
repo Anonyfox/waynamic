@@ -21,7 +21,7 @@ angular.module('app.controllers', [])
     if error
       alert error
     else
-      $scope.currentPictures = result.data.trainingset
+      $scope.currentPictures = _.union result.data.recommendations, result.data.trainingset
 
   $scope.requestPictures = (keywords) -> Pictures.getForKeywords keywords, (error, result) ->
     if error

@@ -38,7 +38,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
       if (error) {
         return alert(error);
       } else {
-        return $scope.currentPictures = result.data.trainingset;
+        return $scope.currentPictures = _.union(result.data.recommendations, result.data.trainingset);
       }
     });
     $scope.requestPictures = function(keywords) {

@@ -165,11 +165,11 @@ app.get '/users/:id/pictures', (req, res) ->
       Pictures.one req.query._id, cb
     recommendations: (cb) ->
       # here be dragons - get real recommendations:
-      dummy = _id: -1, url: 'img/logo_construction.png', subtitle: 'max mustermann mag dieses Bild'
-      recommendations = [dummy, dummy, dummy, dummy, dummy, dummy]
+      dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
+      recommendations = [dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy]
       cb null, recommendations
     trainingset: (cb) ->
-      Pictures.random 3, (err, pictures) ->
+      Pictures.random 4, (err, pictures) ->
         pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
         cb err, pictures
     , (err, all) ->

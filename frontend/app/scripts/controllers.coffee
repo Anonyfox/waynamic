@@ -19,13 +19,13 @@ angular.module('app.controllers', [])
 .controller('PicturesCtrl', ['$scope', 'Pictures', ($scope, Pictures) ->
 
   $scope.Current = Pictures.getInitialPics (error, result) ->
-    return  error if error
+    return alert error if error
     $scope.Current = result.data
 
   $scope.feedback = (_id) ->
     postBody = _.extend $scope.Current, clicked:_id
     Pictures.getPicsByFeedback postBody, (error, result) ->
-      return  error if error
+      return alert error if error
       $scope.Current = result.data
 ])
 

@@ -36,7 +36,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   '$scope', 'Pictures', function($scope, Pictures) {
     $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
-        return error;
+        return alert(error);
       }
       return $scope.Current = result.data;
     });
@@ -47,7 +47,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
       });
       return Pictures.getPicsByFeedback(postBody, function(error, result) {
         if (error) {
-          return error;
+          return alert(error);
         }
         return $scope.Current = result.data;
       });

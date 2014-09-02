@@ -34,21 +34,13 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('PicturesCtrl', [
   '$scope', 'Pictures', function($scope, Pictures) {
-    $scope.currentPictures = [
-      {
-        tags: ["Sonne", "Strand", "Meer"],
-        title: "tramonto in Grecia (Loutraki - golfo di Corinto)",
-        url: "http://farm8.staticflickr.com/7295/13972537026_913a8a116b.jpg"
-      }, {
-        title: "Lac de Capitello, een paternostermeer, Corsica Frankrijk 2002",
-        url: "http://farm6.staticflickr.com/5218/13981158706_c497a0feff.jpg",
-        tags: ["lacdecapitello", "paternostermeer", "meer", "lake", "lac", "corsica", "corse", "frankrijk", "france", "2002"]
-      }, {
-        "url": "http://farm3.staticflickr.com/2914/14355218095_6e23e19d27.jpg",
-        "title": "Northern values",
-        "tags": ["ricohgr", "urbanfragments", "vsco", "chipshop", "cafe"]
+    $scope.currentPictures = Pictures.getInitialPics(function(error, result) {
+      if (error) {
+        return alert(error);
+      } else {
+        return $scope.currentPictures = result.data.trainingset;
       }
-    ];
+    });
     $scope.requestPictures = function(keywords) {
       return Pictures.getForKeywords(keywords, function(error, result) {
         if (error) {
@@ -67,6 +59,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
       return $scope.requestPictures((pic != null ? pic.tags : void 0) || []);
     };
     return $scope.nextPicturesByTag = function(tag) {
+      alert(tag);
       return $scope.requestPictures([tag]);
     };
   }
@@ -150,7 +143,7 @@ angular.module('app.services', []).service("User", [
         });
       },
       getInitialPics: function(fn) {
-        return $http.get("/picturesInit").then(function(data) {
+        return $http.get("/users/203468/pictures").then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({

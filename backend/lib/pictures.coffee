@@ -28,8 +28,11 @@ Pictures.random = (limit, cb) ->
     ORDER BY rand
     LIMIT {limit};
     """, limit:limit, (err, pictures) ->
+      if err
+        console.log "ERROR in pictures.coffee Pictures.random: #{err.message}"
+        return cb null, {}
       delete picture.rand for picture in pictures
-      cb err, pictures
+      return cb err, pictures
 
 Pictures.one = (_id, cb) ->
   db.query """
@@ -42,7 +45,11 @@ Pictures.one = (_id, cb) ->
       Picture.url AS url,
       Picture.title AS title,
       collect(Tag.name) AS tags;
-  """, pictureID:parseInt(_id), (err, result) -> cb err, result[0]
+  """, pictureID:parseInt(_id), (err, picture) ->
+    if err
+      console.log "ERROR in pictures.coffee Pictures.one: #{err.message}"
+      return cb null, {}
+    return cb err, picture[0]
 
 Pictures.add = (picture, cb) ->
   params =

@@ -161,7 +161,7 @@ app.post '/users/:id/pictures', (req, res) ->
 app.get '/users/:id/pictures', (req, res) ->
   async.series
     current: (cb) ->
-      return cb {} unless req.query._id
+      return cb null, {} unless req.query._id
       Pictures.one req.query._id, cb
     recommendations: (cb) ->
       # here be dragons - get real recommendations:

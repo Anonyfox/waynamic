@@ -151,14 +151,16 @@ app.get '/users/:id', (req, res) ->
 # expects response of GET /user/:id/pictures += clicked:_id
 app.post '/users/:id/pictures', (req, res) ->
   picIDs = _.map (_.union req.body.recommendations, req.body.trainingset), (pic) -> pic._id
-  userID = req.params.id
+  userID = parseInt req.params.id
   click = req.body.clicked
   ignores = _.filter picIDs, (_id) -> _id isnt click
-  Feedback.click userID, click, -> # ignore errors
+  Feedback.click userID, click, (err) ->
+    console.log err.message if err
     async.eachSeries ignores, (ignore, done) ->
-      Feedback.ignore userID, ignore, -> do done # ignore errors
+      Feedback.ignore userID, ignore, (err) ->
+        console.log err.message if err
+        do done
     , ->
-      console.log "id: #{picIDs}"
       return res.redirect "." unless click
       return res.redirect ".?_id=#{click}"
 

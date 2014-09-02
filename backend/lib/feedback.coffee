@@ -6,7 +6,7 @@ db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 Feedback.click = (userID, mediaID, cb) ->
   rating = +1
-  Feedback.feedback userID, mediaID, +1, 'like', cb
+  Feedback.feedback userID, mediaID, rating, 'like', cb
 
 Feedback.ignore = (userID, mediaID, cb) ->
   recommendations = 6
@@ -15,15 +15,21 @@ Feedback.ignore = (userID, mediaID, cb) ->
   Feedback.feedback userID, mediaID, rating, 'dislike', cb
 
 Feedback.feedback = (userID, mediaID, rating, ratingtype, cb) ->
-  cypher = "START item=node({id}) RETURN labels(item) AS mediatype;"
-  db.query cypher, id:mediaID, (err, mediatype) ->
-    switch mediatype[0].mediatype[0]
-      when 'Picture' then Picture userID, mediaID, rating, ratingtype, cb
-      when 'Video'   then Video   userID, mediaID, rating, ratingtype, cb
-      when 'Movie'   then Movie   userID, mediaID, rating, ratingtype, cb
-      when 'Music'   then Music   userID, mediaID, rating, ratingtype, cb
+  throw new Error "no callback defined" unless cb
+  db.query "START item=node({id}) RETURN labels(item) AS mediatype;"
+  , id:mediaID, (err, mediatype) ->
+    if err
+      console.log "ERROR in feedback.coffee Feedback.feedback: #{err.message}"
+      return cb null
+    fn = switch mediatype[0].mediatype[0]
+      when 'Picture' then Picture
+      when 'Video'   then Video
+      when 'Movie'   then Movie
+      when 'Music'   then Music
+    fn userID, mediaID, rating, ratingtype, cb
 
 Picture = (userID, pictureID, rating, ratingtype, cb) ->
+  params = userID: userID, pictureID:pictureID, rating:rating
   if ratingtype is "like" then cypher = """
     START User=node({userID}), Picture=node({pictureID})
     MERGE (User)-[l:like]->(Picture)
@@ -68,7 +74,7 @@ Picture = (userID, pictureID, rating, ratingtype, cb) ->
       i.updated = timestamp(),
       i.dislike = i.dislike + {rating};
     """
-  db.query cypher, userID:userID, pictureID:pictureID, rating:rating, cb
+  db.query cypher, params, cb
 
 
 

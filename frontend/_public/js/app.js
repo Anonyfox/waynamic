@@ -34,33 +34,23 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('PicturesCtrl', [
   '$scope', 'Pictures', function($scope, Pictures) {
-    $scope.currentPictures = Pictures.getInitialPics(function(error, result) {
+    $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
-        return alert(error);
-      } else {
-        return $scope.currentPictures = _.union(result.data.recommendations, result.data.trainingset);
+        return error;
       }
+      return $scope.Current = result.data;
     });
-    $scope.requestPictures = function(keywords) {
-      return Pictures.getForKeywords(keywords, function(error, result) {
-        if (error) {
-          return alert(error);
-        } else {
-          console.log(result.data);
-          return $scope.currentPictures = result.data;
-        }
+    return $scope.feedback = function(_id) {
+      var postBody;
+      postBody = _.extend($scope.Current, {
+        clicked: _id
       });
-    };
-    $scope.nextPicturesByUrl = function(sourceUrl) {
-      var pic;
-      pic = _.filter($scope.currentPictures, function(p) {
-        return p.url === sourceUrl;
-      })[0];
-      return $scope.requestPictures((pic != null ? pic.tags : void 0) || []);
-    };
-    return $scope.nextPicturesByTag = function(tag) {
-      alert(tag);
-      return $scope.requestPictures([tag]);
+      return Pictures.getPicsByFeedback(postBody, function(error, result) {
+        if (error) {
+          return error;
+        }
+        return $scope.Current = result.data;
+      });
     };
   }
 ]);
@@ -133,8 +123,8 @@ angular.module('app.services', []).service("User", [
 ]).service("Pictures", [
   "$http", function($http) {
     return {
-      getForKeywords: function(ary, fn) {
-        return $http.get("/pictures?keywords=" + (ary.join(','))).then(function(data) {
+      getPicsByFeedback: function(postBody, fn) {
+        return $http.post("/users/203468/pictures", postBody).then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({
@@ -143,7 +133,7 @@ angular.module('app.services', []).service("User", [
         });
       },
       getInitialPics: function(fn) {
-        return $http.get("/users/203468/pictures").then(function(data) {
+        return $http.get("/users/203468/pictures?_id=203747").then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({

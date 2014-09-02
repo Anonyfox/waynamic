@@ -29,13 +29,13 @@ angular.module('app.services', [])
 ])
 
 .service("Pictures", ["$http", ($http) ->
-  getForKeywords: (ary, fn) ->
-    $http.get("/pictures?keywords=#{ary.join(',')}").then(
+  getPicsByFeedback: (postBody, fn) ->
+    $http.post("/users/203468/pictures", postBody).then(
       (data) -> fn? null, data
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )
   getInitialPics: (fn) ->
-    $http.get("/users/203468/pictures").then(
+    $http.get("/users/203468/pictures?_id=203747").then(
       (data) -> fn? null, data
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )

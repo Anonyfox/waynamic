@@ -17,26 +17,16 @@ angular.module('app.controllers', [])
 ])
 
 .controller('PicturesCtrl', ['$scope', 'Pictures', ($scope, Pictures) ->
-  $scope.currentPictures = Pictures.getInitialPics (error, result) ->
-    if error
-      alert error
-    else
-      $scope.currentPictures = _.union result.data.recommendations, result.data.trainingset
 
-  $scope.requestPictures = (keywords) -> Pictures.getForKeywords keywords, (error, result) ->
-    if error
-      alert error
-    else
-      console.log result.data
-      $scope.currentPictures = result.data
+  $scope.Current = Pictures.getInitialPics (error, result) ->
+    return  error if error
+    $scope.Current = result.data
 
-  $scope.nextPicturesByUrl = (sourceUrl) ->
-    pic = _.filter($scope.currentPictures, (p) -> p.url is sourceUrl)[0]
-    $scope.requestPictures( pic?.tags or [] )
-
-  $scope.nextPicturesByTag = (tag) ->
-    alert tag
-    $scope.requestPictures( [tag] )
+  $scope.feedback = (_id) ->
+    postBody = _.extend $scope.Current, clicked:_id
+    Pictures.getPicsByFeedback postBody, (error, result) ->
+      return  error if error
+      $scope.Current = result.data
 ])
 
 # .controller('LoginCtrl', ['$scope', 'User', ($scope, User) ->

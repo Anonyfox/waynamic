@@ -150,12 +150,17 @@ app.get '/users/:id', (req, res) ->
 
 # expects response of GET /user/:id/pictures += clicked:_id
 app.post '/users/:id/pictures', (req, res) ->
-  console.log  req.params.id, req.body.clicked
-  console.log  req.params.id, pic._id for pic in req.body.recommendations
-  Feedback.click req.params.id, req.body.clicked
-  Feedback.ignore req.params.id, pic._id for pic in req.body.recommendations
-  res.redirect ".?_id=#{req.body.clicked}"
-
+  picIDs = _.map (_.union req.body.recommendations, req.body.trainingset), (pic) -> pic._id
+  userID = req.params.id
+  click = req.body.clicked
+  ignores = _.filter picIDs, (_id) -> _id isnt click
+  Feedback.click userID, click, -> # ignore errors
+    async.eachSeries ignores, (ignore, done) ->
+      Feedback.ignore userID, ignore, -> do done # ignore errors
+    , ->
+      console.log "id: #{picIDs}"
+      return res.redirect "." unless click
+      return res.redirect ".?_id=#{click}"
 
 # http://localhost:4343/users/155040/pictures?_id=203828
 app.get '/users/:id/pictures', (req, res) ->
@@ -173,7 +178,7 @@ app.get '/users/:id/pictures', (req, res) ->
         pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
         cb err, pictures
     , (err, all) ->
-      return res.end err.message if err
+      return res.end "ERROR in server.coffee: #{err.message}" if err
       return res.json all
 
 

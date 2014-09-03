@@ -6,7 +6,7 @@ db = new neo4j.GraphDatabase 'http://localhost:7474'
 
 Pictures.all = (cb) ->
   db.query """
-    MATCH (Picture:Picture)-[:tag]->(Tag)
+    MATCH (Picture:Picture)-->(Tag:`dc:keyword`)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,
@@ -18,7 +18,7 @@ Pictures.random = (limit, cb) ->
   db.query """
     MATCH (Picture:Picture)
     WITH Picture, rand() AS rand
-    MATCH (Picture)-[:tag]->(Tag)
+    MATCH (Picture)-->(Tag:`dc:keyword`)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,
@@ -39,7 +39,7 @@ Pictures.one = (_id, cb) ->
     START Picture = node({pictureID})
     WHERE labels(Picture) = ['Picture']
     WITH Picture
-    MATCH (Picture)-[:tag]->(Tag)
+    MATCH (Picture)-->(Tag:`dc:keyword`)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,
@@ -60,14 +60,14 @@ Pictures.add = (picture, cb) ->
       WITH Picture
       WHERE Picture.new = 1
       UNWIND {tags} AS tagname
-        MERGE (t:Tag {name: tagname})
-        MERGE (Picture)-[:tag]->(t)
+        MERGE (Tag:`dc:keyword` {name: tagname})
+        MERGE (Picture)-[:`dc:keyword`]->(Tag)
       REMOVE Picture.new
   """, _.pick( picture, 'url', 'title', 'tags' ), cb
 
 Pictures.get_id = (picture, cb) ->
   db.query """
-    MATCH (Picture:Picture {url:{url}})-[:tag]->(Tag)
+    MATCH (Picture:Picture {url:{url}})-->(Tag:`dc:keyword`)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,

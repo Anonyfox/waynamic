@@ -42,7 +42,7 @@ Picture = (userID, pictureID, rating, ratingtype, cb) ->
       l.updated = timestamp(),
       l.rating = l.rating + {rating}
     WITH User, Picture
-    MATCH (Picture)-[:tag]->(Tag:Tag)
+    MATCH (Picture)-->(Tag:`dc:keyword`)
     MERGE (User)-[i:`foaf:interest`]->(Tag)
     ON CREATE SET
       i.created = timestamp(),
@@ -64,7 +64,7 @@ Picture = (userID, pictureID, rating, ratingtype, cb) ->
       d.updated = timestamp(),
       d.rating = d.rating + {rating}
     WITH User, Picture
-    MATCH (Picture)-[:tag]->(Tag:Tag)
+    MATCH (Picture)-->(Tag:`dc:keyword`)
     MERGE (User)-[i:`foaf:interest`]->(Tag)
     ON CREATE SET
       i.created = timestamp(),

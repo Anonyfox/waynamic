@@ -2,16 +2,15 @@ Feedback = exports? and exports or @Feedback = {}
 
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
-
+_ = require 'underscore'
 
 Feedback.click = (userID, mediaID, cb) ->
   rating = +1
   Feedback.feedback userID, mediaID, rating, 'like', cb
 
 Feedback.ignore = (userID, mediaID, cb) ->
-  recommendations = 6
-  relevance = 0.2
-  rating = relevance / recommendations
+  recommendations = 12
+  rating = 1.0 / recommendations
   Feedback.feedback userID, mediaID, rating, 'dislike', cb
 
 Feedback.feedback = (userID, mediaID, rating, ratingtype, cb) ->

@@ -2,6 +2,7 @@
 
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
+_ = require 'underscore'
 
 ## Code
 
@@ -9,46 +10,50 @@ MicroService = require('micros').MicroService
 ms = new MicroService 'user'
 ms.$set 'api', 'ws'
 
-normalize = (metatag) ->
-  max = metatag[0].likes * 1.0
-  for metavalue in metatag
-    metavalue.likes /= max
-    metavalue.dislikes /= max
-
-combine = (metatag) ->
-  for tagvalue in metatag
-    tagvalue.likes = tagvalue.likes * tagvalue.likes / (tagvalue.likes + tagvalue.dislikes)
-    delete tagvalue.dislikes
-
 user = (req, res, next) ->
   console.log "user"
   next req, res
 
 # Implemented from Josua
-# The Interests from a user: req.user
+# expects:  req.user  (userid)
+# returns: sth like below (matching metadata)
+#   { Tag: [ {metavalues:'sun', likes:0.5}, ... ]
+#     Genre: ... }
 user.interests = (req, res, next, metatag) ->
-  metatag = 'Tag' # = old name --- dragons: change to dc:keyword
-  # metatag = 'dc:keyword' # Globalized
-  cypher = """
-    START user=node({userID})
-    MATCH (User)-[i:`foaf:interest`]->(metatag:{metatag})
-    RETURN metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
+  mediatype = 'Picture' # globalized
+  db.query """
+    START User=node({userID})
+    MATCH (User)-[i:`foaf:interest`]->(Metatag)
+    WHERE (Metatag)<--(:#{mediatype})
+    RETURN labels(Metatag)[0] AS metatag, Metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
     ORDER BY likes DESC;
-    """
-  db.query cypher, userID:req.user, metatag:metatag, (error, result) ->
-    normalize result
-    combine result
+  """, userID:req.user, (err, result) ->
+    result = _.groupBy result, (meta) -> meta.metatag
+    for metatag, metataglist of result
+      max = metataglist[0].likes * 1.0
+      max = 1.0 if max is 0
+      for metaitem in metataglist
+        delete metaitem.metatag
+        # normalize by likes
+        metaitem.likes /= max
+        metaitem.dislikes /= max
+        # relevance dislikes
+        metaitem.dislikes *= 0.3
+        # combine like and disklike
+        metaitem.likes = metaitem.likes * metaitem.likes / (metaitem.likes + metaitem.dislikes)
+        delete metaitem.dislikes
+      metataglist.sort (a, b) -> if a.likes < b.likes then 1 else -1
     req.interests = result
     next req, res
 
 # The Friends from a user: req.user as a Scatter
 user.sfriends = (req, res, next) ->
   cypher = """
-    START user=node({userID})
-    MATCH (user)-[:`foaf:knows`]->(users)
-    RETURN users
+    START User=node({user})
+    MATCH (User)-[:`foaf:knows`]->(Friends)
+    RETURN id(Friends)
     """
-  db.query cypher, userID:req,user, (error, result) ->
+  db.query cypher, user:req.user, (error, result) ->
     reqres = []
     for friend in result
       nreq = _.clone req

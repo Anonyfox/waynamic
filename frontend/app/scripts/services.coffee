@@ -35,7 +35,7 @@ angular.module('app.services', [])
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )
   getInitialPics: (fn) ->
-    $http.get("/users/203468/pictures?_id=203747").then(
+    $http.get("/users/203468/pictures").then(
       (data) -> fn? null, data
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )

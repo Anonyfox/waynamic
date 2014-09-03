@@ -133,7 +133,7 @@ angular.module('app.services', []).service("User", [
         });
       },
       getInitialPics: function(fn) {
-        return $http.get("/users/203468/pictures?_id=203747").then(function(data) {
+        return $http.get("/users/203468/pictures").then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({

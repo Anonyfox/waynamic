@@ -31,13 +31,6 @@ angular.module('partials', [])
 '<h1>logout placeholder</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/nav.html', [
-'',
-'<ul class="nav">',
-'  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
-'</ul>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
 '',
 '<div ng-controller="PicturesCtrl">',
@@ -65,15 +58,17 @@ angular.module('partials', [])
 '</div>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/nav.html', [
+'',
+'<ul class="nav">',
+'  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
+'</ul>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/profile.html', [
 '',
 '<h1>awesome profile page here.</h1>',
 '<h3>settings and stuff.</h3>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/register.html', [
-'',
-'<h1>registration page here</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/todo.html', [
@@ -96,4 +91,9 @@ angular.module('partials', [])
 '    </form>',
 '  </div>',
 '</div>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/register.html', [
+'',
+'<h1>registration page here</h1>',''].join("\n"));
 }]);

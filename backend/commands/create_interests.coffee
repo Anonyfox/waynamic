@@ -12,7 +12,7 @@ Stopwatch = require '../lib/stopwatch'
 
 clearInterests = (cb) ->
   Stopwatch.start "clear interests"
-  db.query "MATCH (:User)-[r:like|dislike|`foaf:interest`]->() DELETE r", ->
+  Feedback.clear ->
     Stopwatch.stop "clear interests"
     cb arguments...
 

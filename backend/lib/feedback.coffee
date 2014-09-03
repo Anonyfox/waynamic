@@ -2,7 +2,9 @@ Feedback = exports? and exports or @Feedback = {}
 
 neo4j = require 'neo4j'
 db = new neo4j.GraphDatabase 'http://localhost:7474'
-_ = require 'underscore'
+
+Feedback.clear = (cb) ->
+  db.query "MATCH (:User)-[r:like|dislike|`foaf:interest`]->() DELETE r", cb
 
 Feedback.click = (userID, mediaID, cb) ->
   rating = +1

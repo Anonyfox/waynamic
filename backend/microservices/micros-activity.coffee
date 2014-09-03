@@ -1,7 +1,5 @@
 ## Libs
 
-neo4j = require 'neo4j'
-db = new neo4j.GraphDatabase 'http://localhost:7474'
 _ = require 'underscore'
 
 ## Code

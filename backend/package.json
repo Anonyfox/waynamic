@@ -12,7 +12,8 @@
     "db:create": "./node_modules/.bin/coffee ./commands/create.coffee",
     "db:clear": "./node_modules/.bin/coffee ./commands/clear.coffee",
     "db:media": "./node_modules/.bin/coffee ./commands/create_media.coffee",
-    "db:interests": "./node_modules/.bin/coffee ./commands/create_interests.coffee"
+    "db:interests": "./node_modules/.bin/coffee ./commands/create_interests.coffee",
+    "flickr:cache": "./node_modules/.bin/coffee ./commands/flickr_cache.coffee"
   },
   "dependencies": {
     "async": "^0.2.10",

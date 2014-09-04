@@ -1,6 +1,11 @@
 {
+  "uk": "unitedkingdom",
+  "usa": "unitedstates",
+  "ger": "germany",
   "sverige": "sweden",
   "deutschland": "germany",
   "sonnenuntergang": "sundown",
-  "abendsonne": "eveningsun"
+  "abendsonne": "eveningsun",
+  "vw":"volkswagen",
+  "bw":"blackandwhite"
 }

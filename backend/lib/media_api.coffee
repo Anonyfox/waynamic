@@ -5,7 +5,8 @@ _ = require 'underscore'
 fs = require 'fs'
 
 
-# --- helper -------------------------------------------------------------------
+
+# === helper ===================================================================
 
 querystring = require 'querystring'
 https = require 'https'
@@ -37,7 +38,7 @@ https.head = (url, cb) ->
   splitted = url.match /^https?:\/\/(.*?)(\/.*)/
   options =
     method: 'HEAD'
-    host: splitted[1]
+    hostname: splitted[1]
     path: splitted[2]
   do (https.request options, cb).end
 
@@ -49,42 +50,70 @@ yyyymmdd = (date) ->
   "#{yyyy}-#{mm}-#{dd}"
 
 
-# --- tagfilter ----------------------------------------------------------------
 
-tagfilter = (tags) ->
-  return unless tags instanceof Array
-  tags = tagfilter.censored tags
-  tags = tagfilter.useless tags
-  tags = tagfilter.synomity tags
-  tags = tagfilter.doubles tags
-
-tagfilter.censored = (tags) ->
-  censored = require '../data/tags_censored'
-  if _.reduce tags, ((memo, curr) -> memo or curr in censored), false
-    return []
-  tags
-
-tagfilter.synomity = (tags) ->
-  synomity = require '../data/tags_synomity'
-  _.map tags, (tag) -> synomity[tag] or tag
-
-tagfilter.useless = (tags) ->
-  useless = require '../data/tags_useless'
-  tags = _.filter tags, (tag) -> not (tag in useless or /[\d\W]/.test tag or tag.length > 15)
-  tags
-
-tagfilter.doubles = (tags) ->
-  tester = {}
-  tags = _.filter tags, (tag) ->
-    return false if tester[tag]?
-    tester[tag] = true
-  tags
-
-
-# --- flickr -------------------------------------------------------------------
+# === flickr ===================================================================
 
 MediaApi.Flickr = (api_key) ->
   Flickr = {}
+
+  # --- filter -----------------------------------------------------------------
+
+  filter = (pic, cb) ->
+    async.waterfall [
+      ((cb) -> cb null, pic)
+      , filter.correctness
+      # , filter.picture     # really slow -> every pic has its own http reqest
+      , filter.tags_censored
+      , filter.tags_synomity
+      , filter.tags_double
+      , filter.tags_count
+      , filter.tags_useless
+    ], cb
+
+  filter.correctness = (pic, cb) ->
+    unless pic? and pic.url? and pic.title? and pic.tags instanceof Array
+      return cb new Error "SKIPPED: picture not valide"
+    return cb null, pic
+
+  filter.picture = (pic, cb) ->
+    https.head pic.url, (res) ->
+      size = parseInt res.headers['content-length']
+      console.log "#{pic.url} | #{size} bytes"
+      return cb new Error "FILTERED: picture is to small" unless size > 15000
+      return cb null, pic
+
+  filter.tags_censored = (pic, cb) ->
+    censored = require '../data/tags_censored'
+    if (_.reduce pic.tags, ((memo, curr) -> memo or curr in censored), false)
+      return cb new Error "FILTERED: picture contains explicit content"
+    return cb null, pic
+
+  filter.tags_synomity = (pic, cb) ->
+    synomity = require '../data/tags_synomity'
+    pic.tags = _.map pic.tags, (tag) -> synomity[tag] or tag
+    return cb null, pic
+
+  filter.tags_double = (pic, cb) ->
+    checker = {}
+    pic.tags = _.filter pic.tags, (tag) ->
+      return false if checker[tag]?
+      return checker[tag] = true
+    return cb null, pic
+
+  filter.tags_count = (pic, cb) ->
+    return cb new Error "FILTERED: too little tags" if pic.tags.length < 3
+    return cb null, pic
+
+  filter.tags_useless = (pic, cb) ->
+    useless = require '../data/tags_useless'
+    pic.tags = _.filter pic.tags, (tag) ->
+      not (tag in useless) and
+      not (/[\d\W]/.test tag) and
+      # not (tag.length > 15) and
+      not (tag.length < 3)
+    return cb null, pic
+
+  # --- cache ------------------------------------------------------------------
 
   # cached are hot pics from:   05.07.14 - 08.07.14
   Flickr.cache = (opts, cb) ->
@@ -92,33 +121,40 @@ MediaApi.Flickr = (api_key) ->
     pictures = require '../data/flickr_top'
     return cb null, pictures[0...opts.limit]
 
+  Flickr.cache.get_all = ->
+    JSON.readFileSync '../data/flickr_top.json'
+
+  Flickr.cache.write_all = (pictures) ->
+    JSON.writeFileSync '../data/flickr_top.json', pictures
+
+  Flickr.cache.count = ->
+    Flickr.cache.get_all().length
+
   Flickr.cache.add = (new_pics) ->
-    pictures = JSON.readFileSync '../data/flickr_top.json'
-    count = pictures.length
+    pictures = do Flickr.cache.get_all
     new_pics = [new_pics] unless new_pics instanceof Array
     for new_pic in new_pics
       unless _.filter(pictures, (picture) -> picture.url is new_pic.url).length
         pictures.unshift _.pick new_pic, 'url', 'title', 'tags'
-    # console.log (pictures.length-count) + ' picture(s) added to cache'
-    JSON.writeFileSync '../data/flickr_top.json', pictures
+    Flickr.cache.write_all pictures
 
-  Flickr.cache.rm = (cb, next) ->
-    pictures = JSON.readFileSync '../data/flickr_top.json'
-    count = pictures.length
-    pictures = _.filter pictures, (picture) -> not cb picture
-    # console.log (count-pictures.length) + ' picture(s) removed from cache'
-    JSON.writeFileSync '../data/flickr_top.json', pictures
-    do next if next
+  Flickr.cache.rm = (rm_urls) ->
+    pictures = do Flickr.cache.get_all
+    rm_urls = [rm_urls] unless rm_urls instanceof Array
+    pictures = _.filter pictures, (pic) -> not (pic.url in rm_urls)
+    Flickr.cache.write_all pictures
 
-  Flickr.cache.count = ->
-    (JSON.readFileSync '../data/flickr_top.json').length
+  Flickr.cache.filter = (done) ->
+    pictures = do Flickr.cache.get_all
+    async.reduce pictures, [], (pictures, picture, cb) ->
+      filter picture, (err, picture) ->
+        return cb null, pictures if err
+        return cb null, pictures.concat picture
+    , (err, result) ->
+      Flickr.cache.write_all result
+      do done
 
-  # remove pictures that have insuffizient tags
-  Flickr.cache.clean = ->
-    Flickr.cache.rm (picture) ->
-      picture.tags = tagfilter picture.tags
-      picture.tags.length < 3
-
+  # --- get pictures -----------------------------------------------------------
 
   Flickr.hot = (opts, cb) ->
     opts.limit ?= 9
@@ -141,14 +177,12 @@ MediaApi.Flickr = (api_key) ->
     add_one = ->
       return cb null, pictures if result.photos.photo.length is 0
       id = (do result.photos.photo.shift).id
-      crawl_one id, (err, picture) ->
+      crawl id, (err, picture) ->
         return cb err if err
-        picture.tags = tagfilter picture.tags
-        if picture.url? and picture.tags.length >=3
+        filter picture, (err, picture) ->
+          return do add_one if err
           pictures.push picture
           return cb null, pictures if pictures.length is amount
-        else
-          do add_one
     available = result.photos.photo.length
     amount = Math.min limit, available
     console.log "pictures available: #{available}, limit: #{limit}"
@@ -156,19 +190,13 @@ MediaApi.Flickr = (api_key) ->
     cb new Error 'no photos gequested' if amount is 0
     async.times amount, add_one
 
-  crawl_one = (id, cb) ->
+  crawl = (id, cb) ->
     async.parallel
       sizes: (cb) ->
         get 'photos.getSizes', photo_id:id, (err, result) ->
           return cb err if err
-          url = (_.filter result.sizes.size, (obj) -> obj.label is 'Medium')[0].source
-          # dragons: here some freezes have taken place in an eralier version
-          # maybe i have already fixed it … but keep going to observe this!
-          # or it was not my fault but flickr's
-          https.head url, (res) ->
-            size = res.headers['content-length']
-            return cb null, url: undefined if size < 15000
-            return cb null, url: url
+          url = (_.filter result.sizes.size, (u) -> u.label is 'Medium')[0].source
+          return cb null, url: url
       info: (cb) ->
         get 'photos.getInfo', photo_id:id, (err, result) ->
           return cb err if err
@@ -186,7 +214,7 @@ MediaApi.Flickr = (api_key) ->
   Flickr
 
 
-# --- youtube ------------------------------------------------------------------
+# === youtube ==================================================================
 
 MediaApi.Youtube = ->
   youtubeSearch = require 'youtube-search'
@@ -209,7 +237,7 @@ MediaApi.Youtube = ->
   Youtube
 
 
-# --- itunes -------------------------------------------------------------------
+# === itunes ===================================================================
 
 MediaApi.iTunes = ->
   config =
@@ -223,6 +251,7 @@ MediaApi.iTunes = ->
     opts.limit ?= 9
     request 'http://itunes.apple.com/search', config, media:'all', term:opts.term, limit:opts.limit, cb
 
+  # --- music ------------------------------------------------------------------
 
   iTunes.music = {}
   iTunes.music.find = (opts, cb) ->
@@ -254,6 +283,8 @@ MediaApi.iTunes = ->
           name: track.collectionArtistName
         genre: track.primaryGenreName
         )
+
+  # --- movie ------------------------------------------------------------------
 
   iTunes.movie = {}
   iTunes.movie.find = (opts, cb) ->

@@ -76,7 +76,7 @@ MediaApi.Flickr = (api_key) ->
     return cb null, pic
 
   filter.picture = (pic, cb) ->
-    https.head pic.url, (res) ->
+    https.get pic.url, (res) -> # head
       size = parseInt res.headers['content-length']
       console.log "#{pic.url} | #{size} bytes"
       return cb new Error "FILTERED: picture is to small" unless size > 15000

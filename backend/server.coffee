@@ -167,7 +167,7 @@ app.post '/users/:id/pictures', (req, res) ->
 # http://localhost:4343/users/155040/pictures?_id=203828
 app.get '/users/:id/pictures', (req, res) ->
   Users.one req.params.id, (err, user) ->
-    if user.length
+    if user._id?
       count_rec = 8
       count_ts = 4
     else

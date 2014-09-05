@@ -44,9 +44,9 @@ angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
 '',
-'<div ng-controller="PicturesCtrl">',
-'  <div ng-if="users.current._id == 0"></div>',
-'  <div ng-if="users.current._id != 0">',
+'<div ng-if="users.current._id == 0"></div>',
+'<div ng-if="users.current._id != 0">',
+'  <div ng-controller="PicturesCtrl">',
 '    <ul class="thumbnails">',
 '      <li ng-show="Current" class="span12">',
 '        <div class="thumbnail">',

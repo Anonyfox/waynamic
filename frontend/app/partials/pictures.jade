@@ -1,7 +1,7 @@
-div(ng-controller="PicturesCtrl")
-  div(ng-if="users.current._id == 0")
+div(ng-if="users.current._id == 0")
 
-  div(ng-if="users.current._id != 0")
+div(ng-if="users.current._id != 0")
+  div(ng-controller="PicturesCtrl")
     ul.thumbnails
       li.span12(ng-show="Current")
         .thumbnail

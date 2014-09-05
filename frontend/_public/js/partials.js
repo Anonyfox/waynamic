@@ -37,7 +37,7 @@ angular.module('partials', [])
 '  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
 '</ul>',
 '<form class="navbar-form pull-right">',
-'  <select ng-model="selectedUser" ng-options="u.name for u in allUsers" ng-change="changeSelectedUser(selectedUser)">',
+'  <select ng-model="selectedUser" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(selectedUser)">',
 '  </select>',
 '</form>',''].join("\n"));
 }])

@@ -34,20 +34,13 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('NavCtrl', [
   '$scope', 'User', function($scope, User) {
-    var users;
-    users = User.users();
-    $scope.selectedUser = users.current;
-    $scope.allUsers = users.list;
     $scope.changeSelectedUser = function(u) {
       return User.setCurrentUser(u);
     };
-    return User.getAllUsers(function() {
-      return $scope.allUsers = users.list;
-    });
+    return User.getAllUsers();
   }
 ]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
-    console.log($scope.currentUserId);
     $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
         return alert(error);
@@ -101,12 +94,6 @@ angular.module('app.services', []).service("User", [
       }
     };
     return {
-      users: function() {
-        return $rootScope.users;
-      },
-      currentUser: function() {
-        return $rootScope.users.current;
-      },
       currentUserId: function() {
         return $rootScope.users.current._id;
       },

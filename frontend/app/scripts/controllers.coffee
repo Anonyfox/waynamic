@@ -17,18 +17,12 @@ angular.module('app.controllers', [])
 ])
 
 .controller('NavCtrl', ['$scope', 'User', ($scope, User) ->
-  users = User.users()
-  $scope.selectedUser = users.current
-  $scope.allUsers = users.list
   $scope.changeSelectedUser = (u) ->
     User.setCurrentUser u
-  User.getAllUsers -> $scope.allUsers = users.list
+  User.getAllUsers()
 ])
 
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
-  # users = $rootScope.users
-  # $rootScope.currentUserId = users.current._id
-  console.log $scope.currentUserId
   $scope.Current = Pictures.getInitialPics (error, result) ->
     return alert error if error
     $scope.Current = result.data

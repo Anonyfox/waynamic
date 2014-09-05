@@ -10,8 +10,6 @@ angular.module('app.services', [])
     current: {_id: 0, name: ""}
   }
   return {
-    users: -> $rootScope.users
-    currentUser: -> $rootScope.users.current
     currentUserId: -> $rootScope.users.current._id
     setCurrentUser: (u) -> $rootScope.users.current = u
     getAllUsers: (fn) ->

@@ -25,12 +25,14 @@ angular.module('app.controllers', [])
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
   $scope.Current = Pictures.getInitialPics (error, result) ->
     return alert error if error
+    console.log result.data
     $scope.Current = result.data
 
   $scope.$watch "users.current._id", (oldValue, newValue) ->
     if oldValue isnt newValue
       $scope.Current = Pictures.getInitialPics (error, result) ->
         return alert error if error
+        console.log result.data
         $scope.Current = result.data
 
 

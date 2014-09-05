@@ -45,6 +45,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
       if (error) {
         return alert(error);
       }
+      console.log(result.data);
       return $scope.Current = result.data;
     });
     $scope.$watch("users.current._id", function(oldValue, newValue) {
@@ -53,6 +54,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
           if (error) {
             return alert(error);
           }
+          console.log(result.data);
           return $scope.Current = result.data;
         });
       }

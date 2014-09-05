@@ -6,7 +6,7 @@ div(ng-if="users.current._id != 0")
       li.span12(ng-show="Current")
         .thumbnail
           // here be dragons: how to write this in a if statement
-          img(src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer; height:420px; width:560px; margin-left:0px")
+          img(ng-src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer; height:420px; width:560px; margin-left:0px")
         .caption
           h1 {{Current.current.title}}
           p id just for debugging: {{Current.current._id}}

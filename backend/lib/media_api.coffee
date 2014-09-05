@@ -62,12 +62,12 @@ MediaApi.Flickr = (api_key) ->
     async.waterfall [
       ((cb) -> cb null, pic)
       , filter.correctness
-      # , filter.picture     # really slow -> every pic has its own http reqest
+      , filter.picture     # really slow -> every pic has its own http reqest
       , filter.tags_censored
       , filter.tags_synomity
       , filter.tags_double
-      , filter.tags_count
       , filter.tags_useless
+      , filter.tags_count
     ], cb
 
   filter.correctness = (pic, cb) ->
@@ -249,7 +249,7 @@ MediaApi.iTunes = ->
     return unless cb
     opts.term ?= ''
     opts.limit ?= 9
-    request 'http://itunes.apple.com/search', config, media:'all', term:opts.term, limit:opts.limit, cb
+    request 'https://itunes.apple.com/search', config, media:'all', term:opts.term, limit:opts.limit, cb
 
   # --- music ------------------------------------------------------------------
 
@@ -258,7 +258,7 @@ MediaApi.iTunes = ->
     return unless cb
     opts.term ?= ''
     opts.limit ?= 9
-    request 'http://itunes.apple.com/search', config, media:'music', term:opts.term, limit:opts.limit, (err, result) ->
+    request 'https://itunes.apple.com/search', config, media:'music', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for track in result.results
@@ -291,7 +291,7 @@ MediaApi.iTunes = ->
     return unless cb
     opts.term ?= ''
     opts.limit ?= 9
-    request 'http://itunes.apple.com/search', config, media:'movie', term:opts.term, limit:opts.limit, (err, result) ->
+    request 'https://itunes.apple.com/search', config, media:'movie', term:opts.term, limit:opts.limit, (err, result) ->
       return cb err if err
       # return cb err, result.results # full output
       return cb null, (for movie in result.results

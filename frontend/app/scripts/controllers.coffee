@@ -27,6 +27,13 @@ angular.module('app.controllers', [])
     return alert error if error
     $scope.Current = result.data
 
+  $scope.$watch "users.current._id", (oldValue, newValue) ->
+    if oldValue isnt newValue
+      $scope.Current = Pictures.getInitialPics (error, result) ->
+        return alert error if error
+        $scope.Current = result.data
+
+
   $scope.feedback = (_id) ->
     postBody = _.extend $scope.Current, clicked:_id
     Pictures.getPicsByFeedback postBody, (error, result) ->

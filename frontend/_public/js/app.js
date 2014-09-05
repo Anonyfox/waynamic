@@ -34,25 +34,28 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('NavCtrl', [
   '$scope', 'User', function($scope, User) {
-    var users;
-    users = User.users();
-    $scope.selectedUser = users.current;
-    $scope.allUsers = users.list;
     $scope.changeSelectedUser = function(u) {
       return User.setCurrentUser(u);
     };
-    return User.getAllUsers(function() {
-      return $scope.allUsers = users.list;
-    });
+    return User.getAllUsers();
   }
 ]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
-    console.log($scope.currentUserId);
     $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
         return alert(error);
       }
       return $scope.Current = result.data;
+    });
+    $scope.$watch("users.current._id", function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        return $scope.Current = Pictures.getInitialPics(function(error, result) {
+          if (error) {
+            return alert(error);
+          }
+          return $scope.Current = result.data;
+        });
+      }
     });
     return $scope.feedback = function(_id) {
       var postBody;

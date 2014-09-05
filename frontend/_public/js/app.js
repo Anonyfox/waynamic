@@ -46,7 +46,8 @@ angular.module('app.controllers', []).controller('AppCtrl', [
     });
   }
 ]).controller('PicturesCtrl', [
-  '$scope', 'Pictures', 'User', function($scope, Pictures, User) {
+  '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
+    console.log($scope.currentUserId);
     $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
         return alert(error);
@@ -91,9 +92,8 @@ angular.module('app.filters', []).filter('interpolate', [
 /* Sevices*/
 
 angular.module('app.services', []).service("User", [
-  "$http", function($http) {
-    var users;
-    users = {
+  "$http", "$rootScope", function($http, $rootScope) {
+    $rootScope.users = {
       list: [],
       current: {
         _id: 0,
@@ -102,26 +102,26 @@ angular.module('app.services', []).service("User", [
     };
     return {
       users: function() {
-        return users;
+        return $rootScope.users;
       },
       currentUser: function() {
-        return users.current;
+        return $rootScope.users.current;
       },
       currentUserId: function() {
-        return users.current._id;
+        return $rootScope.users.current._id;
       },
       setCurrentUser: function(u) {
-        return users.current = u;
+        return $rootScope.users.current = u;
       },
       getAllUsers: function(fn) {
         return $http.get("/users").then(function(data) {
-          users.list = _.map(data.data, function(u) {
+          $rootScope.users.list = _.map(data.data, function(u) {
             return {
               _id: u._id,
               name: "#" + u._id + " " + u.firstName + " " + u.lastName
             };
           });
-          return typeof fn === "function" ? fn(null, users.list) : void 0;
+          return typeof fn === "function" ? fn(null, $rootScope.users.list) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn(null, []) : void 0;
         });

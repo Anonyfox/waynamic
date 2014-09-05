@@ -25,8 +25,10 @@ angular.module('app.controllers', [])
   User.getAllUsers -> $scope.allUsers = users.list
 ])
 
-.controller('PicturesCtrl', ['$scope', 'Pictures', 'User', ($scope, Pictures, User) ->
-
+.controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
+  # users = $rootScope.users
+  # $rootScope.currentUserId = users.current._id
+  console.log $scope.currentUserId
   $scope.Current = Pictures.getInitialPics (error, result) ->
     return alert error if error
     $scope.Current = result.data

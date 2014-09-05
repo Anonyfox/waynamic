@@ -49,7 +49,7 @@ Pictures.one = (_id, cb) ->
     if err
       console.log "ERROR in pictures.coffee Pictures.one: #{err.message}"
       return cb null, {}
-    return cb err, picture[0]
+    return cb null, picture[0]
 
 Pictures.add = (picture, cb) ->
   params =

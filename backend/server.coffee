@@ -166,22 +166,29 @@ app.post '/users/:id/pictures', (req, res) ->
 
 # http://localhost:4343/users/155040/pictures?_id=203828
 app.get '/users/:id/pictures', (req, res) ->
-  async.series
-    current: (cb) ->
-      return cb null, {} unless req.query._id
-      Pictures.one req.query._id, cb
-    recommendations: (cb) ->
-      # here be dragons - get real recommendations:
-      dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
-      recommendations = [dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy]
-      cb null, recommendations
-    trainingset: (cb) ->
-      Pictures.random 4, (err, pictures) ->
-        pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
-        cb err, pictures
-    , (err, all) ->
-      return res.end "ERROR in server.coffee: #{err.message}" if err
-      return res.json all
+  Users.one req.params.id, (err, user) ->
+    if user.length
+      count_rec = 8
+      count_ts = 4
+    else
+      count_rec = 0
+      count_ts = 12
+    async.series
+      current: (cb) ->
+        return cb null, {} unless req.query._id
+        Pictures.one req.query._id, cb
+      recommendations: (cb) ->
+        # here be dragons - get real recommendations:
+        dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
+        recommendations = _.times count_rec, ->dummy
+        cb null, recommendations
+      trainingset: (cb) ->
+        Pictures.random count_ts, (err, pictures) ->
+          pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
+          cb err, pictures
+      , (err, all) ->
+        return res.end "ERROR in server.coffee: #{err.message}" if err
+        return res.json all
 
 
 

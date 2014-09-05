@@ -21,4 +21,8 @@ Users.one = (_id, cb) ->
       id(User) AS _id,
       User.firstName AS firstName,
       User.lastName AS lastName;
-    """, userID:parseInt(_id), (err, result) -> cb err, result[0]
+    """, userID:parseInt(_id), (err, result) ->
+      if err
+        console.log "ERROR in users.coffee Users.one: #{err.message}"
+        return cb null, {}
+      cb null, result[0]

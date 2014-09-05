@@ -24,26 +24,26 @@ iTunes = do MediaApi.iTunes
 
 # --- authentification ---------------------------------------------------------
 
-passport = require "passport"
-passportLocal = require("passport-local").Strategy
-NedbStore = require('connect-nedb-session')(express)
-userdb = new NeDB filename: "data/user.json", autoload: true
-userdb.ensureIndex {fieldname: "nodeId", unique: true}
+# passport = require "passport"
+# passportLocal = require("passport-local").Strategy
+# NedbStore = require('connect-nedb-session')(express)
+# userdb = new NeDB filename: "data/user.json", autoload: true
+# userdb.ensureIndex {fieldname: "nodeId", unique: true}
 
-passport.use new passportLocal (nodeId, password, done) ->
-  console.log "passporting..."
-  db.getNodeById nodeId, (user) ->
-    return done(true, null) unless user
-    return done(null, user)
+# passport.use new passportLocal (nodeId, password, done) ->
+#   console.log "passporting..."
+#   db.getNodeById nodeId, (user) ->
+#     return done(true, null) unless user
+#     return done(null, user)
 
-  # userdb.findOne {nodeId: nodeId}, (err, user) ->
-  #   return done(err) if err
-  #   return done(null, false, {message: "Incorrect nodeId"}) unless user
-  #   return done(null, user)
+#   # userdb.findOne {nodeId: nodeId}, (err, user) ->
+#   #   return done(err) if err
+#   #   return done(null, false, {message: "Incorrect nodeId"}) unless user
+#   #   return done(null, user)
+# # passport.serializeUser (user, done) -> done null, user._id
+# # passport.deserializeUser (id, done) -> userdb.findOne {_id: id}, (err, user) -> done(err, user)
 # passport.serializeUser (user, done) -> done null, user._id
-# passport.deserializeUser (id, done) -> userdb.findOne {_id: id}, (err, user) -> done(err, user)
-passport.serializeUser (user, done) -> done null, user._id
-passport.deserializeUser (id, done) -> db.getNodeById nodeId, (user) -> done(null, user)
+# passport.deserializeUser (id, done) -> db.getNodeById nodeId, (user) -> done(null, user)
 
 
 
@@ -53,9 +53,9 @@ app.configure ->
   app.enable 'trust proxy' # i am behind a nginx !
   app.use express.compress()
   app.use express.cookieParser()
-  app.use express.cookieSession({secret: "ThePerfectDistractionMachine", key: "nsa_tracking_cookie", cookie: {maxAge: 1000*60*60*24*365}})
-  app.use passport.initialize()
-  app.use passport.session()
+  # app.use express.cookieSession({secret: "ThePerfectDistractionMachine", key: "nsa_tracking_cookie", cookie: {maxAge: 1000*60*60*24*365}})
+  # app.use passport.initialize()
+  # app.use passport.session()
   # app.set 'views', "#{__dirname}/views"
   # app.set 'view engine', 'jade'
   app.use express.json()
@@ -126,13 +126,13 @@ reco = user.interests -> user.sfriends -> filter -> fit -> router.finish
 
 # --- user routes --------------------------------------------------------------
 
-sanitizeUser = (obj) -> _.pick(obj, "_id", "firstName", "lastName", "createdAt", "nodeId")
-auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
+# sanitizeUser = (obj) -> _.pick(obj, "_id", "firstName", "lastName", "createdAt", "nodeId")
+# auth = (req, res, next) -> if req.isAuthenticated() then next() else res.send 401
 
-app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
-app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
-app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
-app.get "/test", (req, res) -> res.json req.user
+# app.get  "/loggedin", auth, (req, res) -> res.json sanitizeUser req.user
+# app.post "/login", passport.authenticate('local'), (req, res) -> res.json sanitizeUser req.user
+# app.post "/logout", auth, (req, res) -> req.logout(); req.session = null; res.send 200
+# app.get "/test", (req, res) -> res.json req.user
 
 app.get '/users', (req, res) ->
   Users.all (err, result) ->

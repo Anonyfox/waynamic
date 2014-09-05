@@ -32,8 +32,21 @@ angular.module('app.controllers', []).controller('AppCtrl', [
       }
     };
   }
+]).controller('NavCtrl', [
+  '$scope', 'User', function($scope, User) {
+    var users;
+    users = User.users();
+    $scope.selectedUser = users.current;
+    $scope.allUsers = users.list;
+    $scope.changeSelectedUser = function(u) {
+      return User.setCurrentUser(u);
+    };
+    return User.getAllUsers(function() {
+      return $scope.allUsers = users.list;
+    });
+  }
 ]).controller('PicturesCtrl', [
-  '$scope', 'Pictures', function($scope, Pictures) {
+  '$scope', 'Pictures', 'User', function($scope, Pictures, User) {
     $scope.Current = Pictures.getInitialPics(function(error, result) {
       if (error) {
         return alert(error);
@@ -79,52 +92,47 @@ angular.module('app.filters', []).filter('interpolate', [
 
 angular.module('app.services', []).service("User", [
   "$http", function($http) {
-    var user;
-    user = {
-      name: null,
-      loggedIn: false
+    var users;
+    users = {
+      list: [],
+      current: {
+        _id: 0,
+        name: ""
+      }
     };
     return {
+      users: function() {
+        return users;
+      },
       currentUser: function() {
-        return user;
+        return users.current;
       },
-      login: function(id, fn) {
-        return $http.post("/login", {
-          id: id
-        }).then(function(data) {
-          return typeof fn === "function" ? fn(null, data) : void 0;
+      currentUserId: function() {
+        return users.current._id;
+      },
+      setCurrentUser: function(u) {
+        return users.current = u;
+      },
+      getAllUsers: function(fn) {
+        return $http.get("/users").then(function(data) {
+          users.list = _.map(data.data, function(u) {
+            return {
+              _id: u._id,
+              name: "#" + u._id + " " + u.firstName + " " + u.lastName
+            };
+          });
+          return typeof fn === "function" ? fn(null, users.list) : void 0;
         }, function(data) {
-          return typeof fn === "function" ? fn({
-            error: data.error || "Node ID invalid!"
-          }, null) : void 0;
+          return typeof fn === "function" ? fn(null, []) : void 0;
         });
-      },
-      logout: function() {
-        return $http.post("/logout").then(function(result) {
-          return user = {
-            name: null,
-            loggedIn: false
-          };
-        }, function(result) {
-          return user = {
-            name: null,
-            loggedIn: false
-          };
-        });
-      },
-      checkSession: function() {
-        return $http.get("/loggedin").then(function(result) {
-          user.name = result.data.name;
-          return user.loggedIn = true;
-        }, function(fail) {});
       }
     };
   }
 ]).service("Pictures", [
-  "$http", function($http) {
+  "$http", "User", function($http, User) {
     return {
       getPicsByFeedback: function(postBody, fn) {
-        return $http.post("/users/203468/pictures", postBody).then(function(data) {
+        return $http.post("/users/" + (User.currentUserId()) + "/pictures", postBody).then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({
@@ -133,7 +141,7 @@ angular.module('app.services', []).service("User", [
         });
       },
       getInitialPics: function(fn) {
-        return $http.get("/users/203468/pictures").then(function(data) {
+        return $http.get("/users/" + (User.currentUserId()) + "/pictures").then(function(data) {
           return typeof fn === "function" ? fn(null, data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({

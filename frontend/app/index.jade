@@ -24,7 +24,7 @@ html(lang='en', ng-app='app')
   body(ng-controller='AppCtrl')
     .wrapper
       .navbar.navbar-static-top.navbar-inverse
-        .navbar-inner
+        .navbar-inner(ng-controller="NavCtrl")
           .container
             button.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
               span.icon-bar
@@ -35,4 +35,4 @@ html(lang='en', ng-app='app')
               div(ng-include="'/partials/nav.html'")
       .container.main-content
         div(ng-view)
-        
+

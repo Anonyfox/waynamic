@@ -16,7 +16,16 @@ angular.module('app.controllers', [])
   $scope.getClass = (id) -> if $scope.activeNavId.substring(0, id.length) == id then 'active' else ''
 ])
 
-.controller('PicturesCtrl', ['$scope', 'Pictures', ($scope, Pictures) ->
+.controller('NavCtrl', ['$scope', 'User', ($scope, User) ->
+  users = User.users()
+  $scope.selectedUser = users.current
+  $scope.allUsers = users.list
+  $scope.changeSelectedUser = (u) ->
+    User.setCurrentUser u
+  User.getAllUsers -> $scope.allUsers = users.list
+])
+
+.controller('PicturesCtrl', ['$scope', 'Pictures', 'User', ($scope, Pictures, User) ->
 
   $scope.Current = Pictures.getInitialPics (error, result) ->
     return alert error if error

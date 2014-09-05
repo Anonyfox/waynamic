@@ -106,12 +106,6 @@ angular.module('app.services', []).service("User", [
       }
     };
     return {
-      users: function() {
-        return $rootScope.users;
-      },
-      currentUser: function() {
-        return $rootScope.users.current;
-      },
       currentUserId: function() {
         return $rootScope.users.current._id;
       },

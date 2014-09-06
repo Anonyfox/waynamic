@@ -15,6 +15,7 @@ item = (req, res, next) ->
 # Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count
 # Aggregate each recommendation set to master list
 item.aggregate = (req, res, next) ->
+  ###
   res = { recommendations: [] }
   for friend in req
     for recommendation in friend.recommendations
@@ -25,7 +26,12 @@ item.aggregate = (req, res, next) ->
       else
         res.recommendations.push recommendation
   _.sortBy res.recommendations, (rec) -> rec.quality
-  next req[0], res
+  ###
+  console.log req,res
+  req = req[0]
+  delete req.activities
+  res = [{ id: 4 }, { id: 5 }]
+  next req, res
 
 ms.$install item
 

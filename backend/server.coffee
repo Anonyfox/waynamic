@@ -100,6 +100,7 @@ router.$set 'port', 4500
 runtime = (req, res, next) ->
 
 runtime.finish = (req, res, next) ->
+  console.log req, res
   if register[req.key]?
     register[req.key] res
     delete register[req.key]

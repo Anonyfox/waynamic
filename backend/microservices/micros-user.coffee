@@ -50,7 +50,7 @@ user.interests = (req, res, next) ->
         metatag
       metataglist = _.filter metataglist, (metatag) -> metatag.like > 0
       metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
-    req.interests = interests
+    req.interests = res.interests = interests
     next req, res
 
 # The Friends from a user: req.user as a Scatter

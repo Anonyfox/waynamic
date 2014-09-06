@@ -237,19 +237,23 @@ app.get '/music', (req,res) ->
 # ------------------------------------------------------------------------------
 
 app.get '/recommendations', (req,res) ->
-  # Start the MicroChain
-  key = generate_router_key req
-  # Set request paramezers
-  request =
-    key: key
-    type: req.body.type
-    context: req.body.context
-    count: req.body.count
-  # Register Callback
-  register[key] = (data) -> res.json data
-  cb = ->
-    reco.exec request
-  setTimeout cb, 0
+  # hard data for debugging:
+  Users.all (err,users) ->
+    return res.end 'ERROR: no user available' unless users[0]
+    return res.json users[0]
+
+    # Start the MicroChain
+    key = generate_router_key req
+    # Set request paramezers
+    request =
+      key: key                     # dragons: move to micros.coffee
+      current_user: users[0]._id   # id
+      type: 'Picture'              # Picture
+      count: 8                     # 8 recommednations requested
+      context: req.body.context    # ????????
+    # Register Callback
+    register[key] = (data) -> res.json data
+    setTimeout (-> reco.exec request), 0
 
 
 

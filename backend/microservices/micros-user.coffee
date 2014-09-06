@@ -14,36 +14,43 @@ user = (req, res, next) ->
   console.log "user"
   next req, res
 
-# Implemented from Josua
-# expects:  req.user  (userid)
-# returns: sth like below (matching metadata)
-#   { Tag: [ {metavalues:'sun', likes:0.5}, ... ]
-#     Genre: ... }
-user.interests = (req, res, next, metatag) ->
-  mediatype = 'Picture' # globalized
+# expects:
+#   req.current_user
+#   req.type
+# returns (example):
+#   interests: {
+#     'dc:keyword:': [
+#       {name:'sun', likes:0.5},       # like interval 0..1
+#       {name:'sea', likes:0.4}        # sort by likes descending
+#     ]
+#   }
+user.interests = (req, res, next) ->
   db.query """
     START User=node({userID})
     MATCH (User)-[i:`foaf:interest`]->(Metatag)
-    WHERE (Metatag)<--(:#{mediatype})
-    RETURN labels(Metatag)[0] AS metatag, Metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
-    ORDER BY likes DESC;
-  """, userID:req.user, (err, result) ->
-    result = _.groupBy result, (meta) -> meta.metatag
-    for metatag, metataglist of result
-      max = metataglist[0].likes * 1.0
+    WHERE (Metatag)<--(:#{req.type})
+    RETURN labels(Metatag)[0] AS metatype, Metatag.name AS name, i.like AS like, i.dislike AS dislikes
+    ORDER BY like DESC;
+  """, userID:req.current_user, (err, result) ->
+    interests = _.groupBy result, (meta) -> meta.metatype
+    for metatype, metataglist of interests
+      max = metataglist[0].like * 1.0
       max = 1.0 if max is 0
-      for metaitem in metataglist
-        delete metaitem.metatag
+      metataglist = _.map metataglist, (metatag) ->
         # normalize by likes
-        metaitem.likes /= max
-        metaitem.dislikes /= max
-        # relevance dislikes
-        metaitem.dislikes *= 0.3
+        metatag.like /= max
+        metatag.dislikes /= max
+        # relevance dislikes - hard coded
+        metatag.dislikes *= 0.3
         # combine like and disklike
-        metaitem.likes = metaitem.likes * metaitem.likes / (metaitem.likes + metaitem.dislikes)
-        delete metaitem.dislikes
-      metataglist.sort (a, b) -> if a.likes < b.likes then 1 else -1
-    req.interests = result
+        metatag.like = metatag.like * metatag.like / (metatag.like + metatag.dislikes)
+        # sanitize
+        delete metatag.metatype
+        delete metatag.dislikes
+        metatag
+      metataglist = _.filter metataglist, (metatag) -> metatag.like > 0
+      metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
+    req.interests = interests
     next req, res
 
 # The Friends from a user: req.user as a Scatter

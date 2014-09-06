@@ -197,7 +197,7 @@ app.get '/users/:id/pictures', (req, res) ->
 
 # query:  http://localhost:4343/pictures?keywords=forest,beach
 app.get '/pictures', (req, res) ->
-  keywords = req.query.keywords or 'flickr'
+  keywords = req.query.keywords or ''
   keywords = keywords.split ',' unless keywords instanceof Array
   Flickr.find keywords:keywords, limit:9, (err, result) ->
     return res.end err.message if err
@@ -214,21 +214,21 @@ app.get '/pictures/hot', (req, res) ->
 
 # query:  http://localhost:4343/videos?term=coffeescript
 app.get '/videos', (req, res) ->
-  term = req.query.term or 'youtube'
+  term = req.query.term or ''
   Youtube.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
 # query:  http://localhost:4343/movies?term=matrix
 app.get '/movies', (req,res) ->
-  term = req.query.term or 'itunes'
+  term = req.query.term or ''
   iTunes.movie.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
 
 # query:  http://localhost:4343/music?term=matrix
 app.get '/music', (req,res) ->
-  term = req.query.term or 'itunes'
+  term = req.query.term or ''
   iTunes.music.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result

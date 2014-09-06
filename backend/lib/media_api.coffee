@@ -183,11 +183,11 @@ MediaApi.Flickr = (api_key) ->
           return do add_one if err
           pictures.push picture
           return cb null, pictures if pictures.length is amount
-    available = result.photos.photo.length
+    available = 0
+    available = result.photos.photo.length if result.stat is 'ok'
     amount = Math.min limit, available
     console.log "pictures available: #{available}, limit: #{limit}"
-    cb new Error 'no photos available' if available is 0
-    cb new Error 'no photos gequested' if amount is 0
+    return cb null, [] if available is 0 or amount is 0
     async.times amount, add_one
 
   crawl = (id, cb) ->
@@ -225,7 +225,7 @@ MediaApi.Youtube = ->
     opts.limit ?= 9
     opts.term ?= ''
     youtubeSearch.search opts.term, {maxResults:opts.limit, startIndex:1}, (err, results) ->
-      return cb err if err
+      return cb null, [] if err
       return cb null, (for video in results
         url: video.url
         title: video.title

@@ -1,10 +1,5 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/import.html', [
-'',
-'<h1>mighty social networks import here.</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/landingpage.html', [
 '',
 '<h1>awesome landingpage here.</h1>',''].join("\n"));
@@ -24,6 +19,11 @@ angular.module('partials', [])
 '    </div>',
 '  </div>',
 '</div>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/import.html', [
+'',
+'<h1>mighty social networks import here.</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/logout.html', [
@@ -53,13 +53,11 @@ angular.module('partials', [])
 '      <ul class="thumbnails">',
 '        <li ng-show="Current" class="span12">',
 '          <div class="thumbnail">',
-'            <!-- here be dragons: how to write this in a if statement--><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer; height:420px; width:560px; margin-left:0px">',
-'          </div>',
-'          <div class="caption">',
-'            <h1>{{Current.current.title}}</h1>',
-'            <p>id just for debugging: {{Current.current._id}}</p>',
-'            <p><span ng-repeat="tag in Current.current.tags"> {{tag}}</span>',
-'            </p>',
+'            <!-- here be dragons: how to write this in a if statement--><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer; height:300px; width:400px; margin-left:0px; margin-right:20px; float:left;">',
+'            <div class="caption">',
+'              <h1>{{Current.current.title}}</h1><span ng-repeat="tag in Current.current.tags" style="margin:5px; padding:5px;" class="label">{{tag}}</span>',
+'            </div>',
+'            <div style="clear:left;"></div>',
 '          </div>',
 '        </li>',
 '      </ul>',

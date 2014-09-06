@@ -7,13 +7,12 @@ div(ng-if="users.current._id != 0")
         li.span12(ng-show="Current")
           .thumbnail
             // here be dragons: how to write this in a if statement
-            img(ng-src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer; height:420px; width:560px; margin-left:0px")
-          .caption
-            h1 {{Current.current.title}}
-            p id just for debugging: {{Current.current._id}}
-            p
-              span(ng-repeat="tag in Current.current.tags")  {{tag}}
-              //- button.btn.btn-link(ng-click="nextPicturesByTag(tag)", ng-repeat="tag in Current.current.tags") {{tag}}
+            img(ng-src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer; height:300px; width:400px; margin-left:0px; margin-right:20px; float:left;")
+            .caption
+              h1 {{Current.current.title}}
+              span.label(ng-repeat="tag in Current.current.tags", style="margin:5px; padding:5px;") {{tag}}
+                //- button.btn.btn-link(ng-click="nextPicturesByTag(tag)", ng-repeat="tag in Current.current.tags") {{tag}}
+            div(style="clear:left;")
     ul.thumbnails
       li.span3(ng-repeat="picture in Current.recommendations")
         .thumbnail

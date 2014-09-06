@@ -21,9 +21,6 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
 
 ## General
 
-    // Create a node
-    CREATE (n {name:"World"}) RETURN "hello", n.name
-
     // Get some data
     MATCH (n) RETURN n LIMIT 100
 
@@ -62,7 +59,7 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
     MATCH (user)-[r:`foaf:interest`]->(tag:`dc:keyword`)
     RETURN user, r.like AS like, r.dislike AS dislike, tag
 
-## lists - statistics (example - just 4 fun)
+## lists - statistics (stuff)
 
     // user - ages by frequency
     MATCH (n:User)
@@ -92,39 +89,39 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
 
 ## specific nodes (id required)
 
-// one node by id
-START node=node(203567)
-RETURN node
+    // one node by id
+    START node=node(203567)
+    RETURN node
 
-// one user and picture
-START Pic = node(220255), Usr = node(203468)
-MATCH (Usr)--(Tag:`dc:keyword`)--(Pic)
-RETURN Pic, Usr, Tag
+    // one user and picture
+    START Pic = node(220255), Usr = node(203468)
+    MATCH (Usr)--(Tag:`dc:keyword`)--(Pic)
+    RETURN Pic, Usr, Tag
 
-// interest list of one user
-//START User=node(203468)
-MATCH (User:User) WITH User LIMIT 1
-MATCH (User)-[i:`foaf:interest`]->(metatag:`dc:keyword`)
-RETURN metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
-ORDER BY likes DESC;
+    // interest list of one user
+    //START User=node(203468)
+    MATCH (User:User) WITH User LIMIT 1
+    MATCH (User)-[i:`foaf:interest`]->(metatag:`dc:keyword`)
+    RETURN metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
+    ORDER BY likes DESC;
 
 ## manipulation
 
-// delete stuff made by mistake
-MATCH (x)
-WHERE labels(x) = []
-WITH x
-OPTIONAL MATCH (x)-[r]-(a)
-DELETE r,x
+    // delete stuff made by mistake
+    MATCH (x)
+    WHERE labels(x) = []
+    WITH x
+    OPTIONAL MATCH (x)-[r]-(a)
+        DELETE r,x
 
-// 1. delete (dis)likes, interests
-MATCH (:User)-[r:like|dislike|`foaf:interest`]->()
-DELETE r
+    // 1. delete (dis)likes, interests
+    MATCH (:User)-[r:like|dislike|`foaf:interest`]->()
+    DELETE r
 
-// 2. delete tags
-MATCH ()-[r:`dc:keyword`]->(t:`dc:keyword`)
-DELETE r,t
+    // 2. delete tags
+    MATCH ()-[r:`dc:keyword`]->(t:`dc:keyword`)
+    DELETE r,t
 
-// 3. delete pictures
-MATCH (p:Picture)
-DELETE p
+    // 3. delete pictures
+    MATCH (p:Picture)
+    DELETE p

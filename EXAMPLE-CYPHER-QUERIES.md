@@ -2,7 +2,30 @@
 
 run this commands in the [neo4j-browser](http://localhost:7474/browser/)
 
-## general
+## System
+
+    // Server configuration
+    :GET /db/manage/server/jmx/domain/org.neo4j/instance%3Dkernel%230%2Cname%3DConfiguration
+
+    // Kernel information
+    :GET /db/manage/server/jmx/domain/org.neo4j/instance%3Dkernel%230%2Cname%3DKernel
+
+    // ID Allocation
+    :GET /db/manage/server/jmx/domain/org.neo4j/instance%3Dkernel%230%2Cname%3DPrimitive%20count
+
+    // Store file sizes
+    :GET /db/manage/server/jmx/domain/org.neo4j/instance%3Dkernel%230%2Cname%3DStore%20file%20sizes
+
+    // Extensions
+    :GET /db/data/ext
+
+## General
+
+    // Create a node
+    CREATE (n {name:"World"}) RETURN "hello", n.name
+
+    // Get some data
+    MATCH (n) RETURN n LIMIT 100
 
     // What nodes are there
     MATCH (a)
@@ -13,6 +36,9 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
     WHERE labels(a) <> [] AND labels(b) <> []
     RETURN DISTINCT head(labels(a)) AS This, type(r) as To, head(labels(b)) AS That, count(r) AS Count
     LIMIT 10
+
+    // REST API
+    :GET /db/data
 
 ## graph visualization
 

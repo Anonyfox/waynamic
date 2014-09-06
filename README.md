@@ -20,7 +20,7 @@ git clone https://github.com/Anonyfox/waynamic
 ## neo4j database
 
 * install
-    * first keep shure to have installed jvm 1.7 [wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
+    * first keep shure to have installed jvm 1.7 or higher [wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
     * `brew install neo4j` (on osx via [homebrew](http://brew.sh))
       or install it from [neo4j homepage](http://www.neo4j.org/download)
     * `neo4j install` (initial)

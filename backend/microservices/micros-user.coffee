@@ -56,14 +56,16 @@ user.interests = (req, res, next) ->
 # The Friends from a user: req.user as a Scatter
 user.sfriends = (req, res, next) ->
   cypher = """
-    START User=node({user})
+    START User=node({userID})
     MATCH (User)-[:`foaf:knows`]->(Friends)
-    RETURN id(Friends)
+    RETURN id(Friends) AS _id, Friends.firstName AS firstName, Friends.lastName AS lastName
     """
-  #db.query cypher, user:req.user, (error, result) ->
-
-  #Testdata
-  friends = [] #[{id: 2},{id: 3}]
+  db.query cypher, userID:req.current_user, (error, friends) ->
+  # example:
+  # friends = [
+  #   {_id: 224993, firstName:'Beverlee', lastName:"Garr"},
+  #   {_id: 224999, firstName:'Penny',    lastName:"Grasha"}
+  # ]
 
   reqres = []
   if friends.length is 0

@@ -53,7 +53,7 @@ angular.module('partials', [])
 '      <ul class="thumbnails">',
 '        <li ng-show="Current" class="span12">',
 '          <div class="thumbnail">',
-'            <!-- here be dragons: how to write this in a if statement--><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer; height:300px; width:400px; margin-left:0px; margin-right:20px; float:left;">',
+'            <!-- here be dragons: how to write this in a if statement--><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer; height:300px; margin-left:0px; margin-right:20px; float:left;">',
 '            <div class="caption">',
 '              <h1>{{Current.current.title}}</h1><span ng-repeat="tag in Current.current.tags" style="margin:5px; padding:5px;" class="label">{{tag}}</span>',
 '            </div>',

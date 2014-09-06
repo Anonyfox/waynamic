@@ -17,6 +17,7 @@ activity = (req, res, next) ->
 
 # The Activity Filter (req.activities, req.interests, req.context, req.type)
 activity.filter = (req, res, next) ->
+  ###
   req.recommendations = []
   for act in req.activities
     quality = 0
@@ -24,6 +25,8 @@ activity.filter = (req, res, next) ->
     quality = quality / req.interests.length
     req.recommendations.push { item: act, friend: req.user, quality: quality } if quality > qc
   req.activities = req.activities.length
+  ###
+
   next req, res
 
 ms.$install activity

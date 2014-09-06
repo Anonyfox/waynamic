@@ -60,20 +60,30 @@ user.sfriends = (req, res, next) ->
     MATCH (User)-[:`foaf:knows`]->(Friends)
     RETURN id(Friends)
     """
-  db.query cypher, user:req.user, (error, result) ->
-    reqres = []
-    for friend in result
+  #db.query cypher, user:req.user, (error, result) ->
+
+  #Testdata
+  friends = [] #[{id: 2},{id: 3}]
+
+  reqres = []
+  if friends.length is 0
+    # Modify the chain if no aggregate is needed
+    do next.chain.pop    # Pop the filter out
+    do next.chain.pop    # Pop item.aggregate out
+    # Only the extend service will requested
+    reqres.push req
+  else
+    for friend in friends
       nreq = _.clone req
       nreq.user = friend
       reqres.push nreq
-    reqres.push res
-    if result.length is 0
-      next.chain.pop()    # Pop the friends out
-      next.chain.pop()    # Pop the aggregate out
-    next.apply @, reqres
+
+  reqres.push res
+  next.apply @, reqres
 
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
+  console.log req
   # dragons/querstion
   # what do you want exactly and in which form do you want it?
   # a user has the following edges:
@@ -83,9 +93,13 @@ user.activities = (req, res, next) ->
   cypher = """
 
     """
-  db.query cypher, userID:req,user, (error, result) ->
-    req.activities = result
-    next req, res
+  #db.query cypher, userID:req,user, (error, result) ->
+
+  req.activities = [
+    { id: 6, url: 'http://flickr.com/f67ertw7g', loi: 0.5 }
+    { id: 9, url: 'http://flickr.com/3534gfe55', LOI: 0.9 }
+  ]
+  next req, res
 
 
 ms.$install user

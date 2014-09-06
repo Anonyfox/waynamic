@@ -62,7 +62,7 @@ MediaApi.Flickr = (api_key) ->
     async.waterfall [
       ((cb) -> cb null, pic)
       , filter.correctness
-      , filter.picture     # really slow -> every pic has its own http reqest
+      # , filter.picture     # really slow -> every pic has its own http reqest
       , filter.tags_censored
       , filter.tags_synomity
       , filter.tags_double
@@ -76,7 +76,7 @@ MediaApi.Flickr = (api_key) ->
     return cb null, pic
 
   filter.picture = (pic, cb) ->
-    https.get pic.url, (res) -> # head
+    https.head pic.url, (res) ->
       size = parseInt res.headers['content-length']
       console.log "#{pic.url} | #{size} bytes"
       return cb new Error "FILTERED: picture is to small" unless size > 15000
@@ -109,7 +109,7 @@ MediaApi.Flickr = (api_key) ->
     pic.tags = _.filter pic.tags, (tag) ->
       not (tag in useless) and
       not (/[\d\W]/.test tag) and
-      # not (tag.length > 15) and
+      not (tag.length > 15) and
       not (tag.length < 3)
     return cb null, pic
 

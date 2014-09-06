@@ -55,12 +55,11 @@ user.interests = (req, res, next) ->
 
 # The Friends from a user: req.user as a Scatter
 user.sfriends = (req, res, next) ->
-  cypher = """
+  db.query """
     START User=node({userID})
     MATCH (User)-[:`foaf:knows`]->(Friends)
     RETURN id(Friends) AS _id, Friends.firstName AS firstName, Friends.lastName AS lastName
-    """
-  db.query cypher, userID:req.current_user, (error, friends) ->
+  """, userID:req.current_user, (error, friends) ->
   # example:
   # friends = [
   #   {_id: 224993, firstName:'Beverlee', lastName:"Garr"},
@@ -85,17 +84,18 @@ user.sfriends = (req, res, next) ->
 
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
-  console.log req
-  # dragons/querstion
-  # what do you want exactly and in which form do you want it?
-  # a user has the following edges:
-  #   `foaf:knows` to other `User`
-  #   `like`, `dislike` to media nodes, in this case `Picture`
-  #   `foaf:interest` to metadata, in this case `Tag` (dc:keyword coming soon)
-  cypher = """
-
-    """
-  #db.query cypher, userID:req,user, (error, result) ->
+  db.query """
+    START User=node({userID})
+    MATCH (User)-[like:`like`]->(Picture:#{req.type})
+    RETURN id(Picture) AS _id, Picture.title AS title, Picture.url AS url, like.updated AS updated
+    ORDER BY updated DESC
+    LIMIT 100
+  """, userID:req.current_user, (error, likes) ->
+  # example:
+  # likes = [
+  #   { _id:238561, title:'Tranquil Misty Dawn', url:'https://farm6.staticflickr.com/5578/14180193348_00d924f364.jpg', updated:1410016227069},
+  #   { _id:235797, title:'Transformación de Luz', url:'https://farm4.staticflickr.com/3845/14174050520_b662863b9c.jpg', updated:1410016225268}
+  # ]
 
   req.activities = [
     { id: 6, url: 'http://flickr.com/f67ertw7g', loi: 0.5 }

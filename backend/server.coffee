@@ -241,7 +241,6 @@ app.get '/recommendations', (req,res) ->
   # hard data for debugging:
   Users.all (err,users) ->
     return res.end 'ERROR: no user available' unless users[0]
-    return res.json users[0]
 
     # Start the MicroChain
     key = generate_router_key req

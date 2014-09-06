@@ -22,15 +22,23 @@ angular.module('app.services', [])
   }
 ])
 
-.service("Pictures", ["$http", "User", ($http, User) ->
+.service("Pictures", ["$http", "$rootScope", "User", ($http, $rootScope, User) ->
+  $rootScope.Current = {
+    list: []
+    current: {_id: 0, url: ""}
+  }
   getPicsByFeedback: (postBody, fn) ->
     $http.post("/users/#{User.currentUserId()}/pictures", postBody).then(
-      (data) -> fn? null, data
+      (data) ->
+        $rootScope.Current = data.data
+        fn? null, data.data
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )
   getInitialPics: (fn) ->
     $http.get("/users/#{User.currentUserId()}/pictures").then(
-      (data) -> fn? null, data
+      (data) ->
+        $rootScope.Current = data.data
+        fn? null, data.data
       (data) -> fn? {error: "Something went wrong. Flickr unavailable?"}, null
     )
 ])

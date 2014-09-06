@@ -23,32 +23,16 @@ angular.module('app.controllers', [])
 ])
 
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
-  $scope.Current = Pictures.getInitialPics (error, result) ->
-    return alert error if error
-    console.log result.data
-    $scope.Current = result.data
+  # Start Screen
+  Pictures.getInitialPics() unless $rootScope.Current.list.length
 
+  # Re-render start screen on user change
   $scope.$watch "users.current._id", (oldValue, newValue) ->
     if oldValue isnt newValue
-      $scope.Current = Pictures.getInitialPics (error, result) ->
-        return alert error if error
-        console.log result.data
-        $scope.Current = result.data
+      Pictures.getInitialPics()
 
-
+  # render new screen with updated feedback on user click event
   $scope.feedback = (_id) ->
-    postBody = _.extend $scope.Current, clicked:_id
-    Pictures.getPicsByFeedback postBody, (error, result) ->
-      return alert error if error
-      $scope.Current = result.data
+    postBody = _.extend $rootScope.Current, clicked:_id
+    Pictures.getPicsByFeedback postBody
 ])
-
-# .controller('LoginCtrl', ['$scope', 'User', ($scope, User) ->
-#   $scope.loginNewUser = ->
-#     userId = $scope.newUser.nodeId
-#     User.login (error, user) ->
-#       if error
-#         console.log "LoginError! ", error
-#       else
-#         console.log "Logged IN! ", user
-# ])

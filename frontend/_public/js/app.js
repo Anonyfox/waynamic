@@ -41,35 +41,20 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
-    $scope.Current = Pictures.getInitialPics(function(error, result) {
-      if (error) {
-        return alert(error);
-      }
-      console.log(result.data);
-      return $scope.Current = result.data;
-    });
+    if (!$rootScope.Current.list.length) {
+      Pictures.getInitialPics();
+    }
     $scope.$watch("users.current._id", function(oldValue, newValue) {
       if (oldValue !== newValue) {
-        return $scope.Current = Pictures.getInitialPics(function(error, result) {
-          if (error) {
-            return alert(error);
-          }
-          console.log(result.data);
-          return $scope.Current = result.data;
-        });
+        return Pictures.getInitialPics();
       }
     });
     return $scope.feedback = function(_id) {
       var postBody;
-      postBody = _.extend($scope.Current, {
+      postBody = _.extend($rootScope.Current, {
         clicked: _id
       });
-      return Pictures.getPicsByFeedback(postBody, function(error, result) {
-        if (error) {
-          return alert(error);
-        }
-        return $scope.Current = result.data;
-      });
+      return Pictures.getPicsByFeedback(postBody);
     };
   }
 ]);
@@ -128,11 +113,19 @@ angular.module('app.services', []).service("User", [
     };
   }
 ]).service("Pictures", [
-  "$http", "User", function($http, User) {
+  "$http", "$rootScope", "User", function($http, $rootScope, User) {
+    $rootScope.Current = {
+      list: [],
+      current: {
+        _id: 0,
+        url: ""
+      }
+    };
     return {
       getPicsByFeedback: function(postBody, fn) {
         return $http.post("/users/" + (User.currentUserId()) + "/pictures", postBody).then(function(data) {
-          return typeof fn === "function" ? fn(null, data) : void 0;
+          $rootScope.Current = data.data;
+          return typeof fn === "function" ? fn(null, data.data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({
             error: "Something went wrong. Flickr unavailable?"
@@ -141,7 +134,8 @@ angular.module('app.services', []).service("User", [
       },
       getInitialPics: function(fn) {
         return $http.get("/users/" + (User.currentUserId()) + "/pictures").then(function(data) {
-          return typeof fn === "function" ? fn(null, data) : void 0;
+          $rootScope.Current = data.data;
+          return typeof fn === "function" ? fn(null, data.data) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn({
             error: "Something went wrong. Flickr unavailable?"

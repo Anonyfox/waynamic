@@ -1,5 +1,10 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/import.html', [
+'',
+'<h1>mighty social networks import here.</h1>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/landingpage.html', [
 '',
 '<h1>awesome landingpage here.</h1>',''].join("\n"));
@@ -19,11 +24,6 @@ angular.module('partials', [])
 '    </div>',
 '  </div>',
 '</div>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/import.html', [
-'',
-'<h1>mighty social networks import here.</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/logout.html', [

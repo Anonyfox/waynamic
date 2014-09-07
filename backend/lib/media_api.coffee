@@ -158,7 +158,7 @@ MediaApi.Flickr = (api_key) ->
   # --- get pictures -----------------------------------------------------------
 
   Flickr.hot = (opts, cb) ->
-    opts.limit ?= 9
+    opts.limit ?= 1
     opts.random = not opts.date?
     opts.date ?= new Date Date.now() - 1000*60*60*24 * parseInt(Math.random()*356)
     get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
@@ -168,12 +168,13 @@ MediaApi.Flickr = (api_key) ->
       collect err, result.photos.photo, opts.limit, cb
 
   Flickr.find = (opts, cb) ->
-    opts.limit ?= 9
+    opts.limit ?= 1
     opts.keywords ?= []
     tags = opts.keywords.join ','
     get 'photos.search', per_page:500, tag_mode: 'AND', tags:tags, (err, result) ->
       return cb err if err
       return cb null, [] if result.stat isnt 'ok' or opts.limit is 0
+      result.photos.photo = _.shuffle result.photos.photo if opts.random
       collect err, result.photos.photo, opts.limit, cb
 
   collect = (err, data, limit, cb) ->

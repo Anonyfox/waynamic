@@ -213,18 +213,29 @@ app.get '/users/:id/pictures/interests', (req, res) ->
 app.get '/pictures', (req, res) ->
   keywords = req.query.keywords or ''
   keywords = keywords.split ',' unless keywords instanceof Array
-  Flickr.find keywords:keywords, limit:9, (err, result) ->
-    return res.end err.message if err
-    return res.json result
+  opts =
+    keywords:keywords
+    limit:12
+  Flickr.find opts, (err, pictures) ->
+    if err
+      console.log "ERROR: #{err.message}"
+      res.json {}
+    else
+      Flickr.cache.add pictures
+      async.eachLimit pictures, 1, Pictures.add, ->
+        return res.json pictures
 
 # query:  http://localhost:4343/pictures/hot
-# trainingset: returns 9 top pictures of the last year
+# trainingset: top pictures of the last year
 app.get '/pictures/hot', (req, res) ->
-  Flickr.hot limit:9, (err, pictures) ->
-    return res.end err.message if err
-    # Flickr.cache.add pictures
-    # async.eachLimit pictures, 1, Pictures.add
-    return res.json pictures
+  Flickr.hot limit:12, (err, pictures) ->
+    if err
+      console.log "ERROR: #{err.message}"
+      res.json {}
+    else
+      Flickr.cache.add pictures
+      async.eachLimit pictures, 1, Pictures.add, ->
+        res.json trainingset: pictures
 
 # query:  http://localhost:4343/videos?term=coffeescript
 app.get '/videos', (req, res) ->

@@ -40,6 +40,7 @@ https.head = (url, cb) ->
     method: 'HEAD'
     hostname: splitted[1]
     path: splitted[2]
+    agent: false
   do (https.request options, cb).end
 
 # format date to string
@@ -62,7 +63,7 @@ MediaApi.Flickr = (api_key) ->
     async.waterfall [
       ((cb) -> cb null, pic)
       , filter.correctness
-      # , filter.picture     # really slow -> every pic has its own http reqest
+      , filter.picture       # >200ms/pic series == 99,9% of execution time
       , filter.tags_censored
       , filter.tags_synomity
       , filter.tags_double
@@ -78,7 +79,7 @@ MediaApi.Flickr = (api_key) ->
   filter.picture = (pic, cb) ->
     https.head pic.url, (res) ->
       size = parseInt res.headers['content-length']
-      console.log "#{pic.url} | #{size} bytes"
+      # console.log "#{pic.url} | #{size} bytes"
       return cb new Error "FILTERED: picture is to small" unless size > 15000
       return cb null, pic
 
@@ -158,33 +159,35 @@ MediaApi.Flickr = (api_key) ->
 
   Flickr.hot = (opts, cb) ->
     opts.limit ?= 9
-    opts.random ?= true
-    opts.date ?= new Date()
-    opts.date = new Date Date.now() - 1000*60*60*24 * parseInt(Math.random()*356) if opts.random
+    opts.random = not opts.date?
+    opts.date ?= new Date Date.now() - 1000*60*60*24 * parseInt(Math.random()*356)
     get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
-      collect err, result, opts.limit, cb
+      return cb err if err
+      return cb null, [] if result.stat isnt 'ok' or opts.limit is 0
+      result.photos.photo = _.shuffle result.photos.photo if opts.random
+      collect err, result.photos.photo, opts.limit, cb
 
   Flickr.find = (opts, cb) ->
     opts.limit ?= 9
     opts.keywords ?= []
     tags = opts.keywords.join ','
     get 'photos.search', per_page:500, tag_mode: 'AND', tags:tags, (err, result) ->
-      collect err, result, opts.limit, cb
+      return cb err if err
+      return cb null, [] if result.stat isnt 'ok' or opts.limit is 0
+      collect err, result.photos.photo, opts.limit, cb
 
-  collect = (err, result, limit, cb) ->
-    return cb err if err
+  collect = (err, data, limit, cb) ->
     pictures = []
     add_one = ->
-      return cb null, pictures if result.photos.photo.length is 0
-      id = (do result.photos.photo.shift).id
+      return cb null, pictures if data.length is 0
+      id = (do data.shift).id
       crawl id, (err, picture) ->
         return cb err if err
         filter picture, (err, picture) ->
           return do add_one if err
           pictures.push picture
           return cb null, pictures if pictures.length is amount
-    available = 0
-    available = result.photos.photo.length if result.stat is 'ok'
+    available = data.length
     amount = Math.min limit, available
     console.log "pictures available: #{available}, limit: #{limit}"
     return cb null, [] if available is 0 or amount is 0

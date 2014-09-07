@@ -14,16 +14,22 @@ item = (req, res, next) ->
 
 # Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count
 # Aggregate each recommendation set to master list
-item.aggregate = (req, res, next) ->
+item.aggregate = (reqs, ress, next) ->
   recommendations = []
-  count = req[0].count
-  for recos in req
-    for reco in recos
+  count = reqs[0].count
+  for req in reqs
+    for reco in req.recos
       index = _.sortedIndex recommendations, reco, 'prediciton'
-      recommendations.splice index, 0, reco
-      recommendations.splice(0,1) if recommendations.length > count
+      console.log reco, index
+      if index is (count-1)
+        reco.friend =
+          _id: req.user
+          firstName: req.firstName
+          lastName: req.lastName
+        recommendations.splice index, 0, reco
+        recommendations.splice(0,1)
 
-  #console.log req,res
+  console.log recommendations
   req = req[0]
   req.user = req.current_user
   delete req.recos

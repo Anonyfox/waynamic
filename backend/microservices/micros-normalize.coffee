@@ -8,15 +8,15 @@ ms.$set 'api', 'ws'
 
 qc = 0.1
 qc_tie = 1
-qc_feeback = 1
+qc_feedback = 1
 
 # Calculate normalization: req.recommendations, req.activities
 # Normalization means the readjustment of predictions against the qualifier
 # the readjsutment works with the personal tie strength and the own item-feedback from friends
 normalize = (req, res, next) ->
-  recos = req.recos.reduce( (akk, reco) ->
+  tie = req.user.tie = 1
+  req.recos = req.recos.filter (reco) ->
     feedback = reco.item.feedback
-    tie = user.tie
 
     correlation = reco.prediction
     correlation = correlation * tie * qc_tie
@@ -24,10 +24,10 @@ normalize = (req, res, next) ->
 
     if correlation > qc
       reco.prediction = correlation
-      akk.push reco
-    else akk
-  , [])
+      true
+    else false
 
+  console.log req.recos
   next req, res
 
 ms.$install normalize

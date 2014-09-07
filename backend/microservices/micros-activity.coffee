@@ -30,7 +30,6 @@ activity.filter = (req, res, next) ->
     , 0)
     req.recos.push({
       item: _.pick item, ['url', 'title', 'feedback']
-      friend: req.user
       prediction: correlation
     }) if correlation >= qc
 

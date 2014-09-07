@@ -29,7 +29,7 @@ activity.filter = (req, res, next) ->
       else akk
     , 0)
     req.recos.push({
-      item: _.pick item, ['url', 'title', 'feedback']
+      item: _.pick item, ['url', 'title', 'rating']
       prediction: correlation
     }) if correlation >= qc
 

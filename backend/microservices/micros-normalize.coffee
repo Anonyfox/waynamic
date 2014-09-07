@@ -14,9 +14,9 @@ qc_feedback = 1
 # Normalization means the readjustment of predictions against the qualifier
 # the readjsutment works with the personal tie strength and the own item-feedback from friends
 normalize = (req, res, next) ->
-  tie = req.user.tie = 1
+  tie = req.tie = 1
   req.recos = req.recos.filter (reco) ->
-    feedback = reco.item.feedback
+    feedback = reco.item.rating
 
     correlation = reco.prediction
     correlation = correlation * tie * qc_tie

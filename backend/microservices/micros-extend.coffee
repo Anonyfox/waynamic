@@ -9,11 +9,7 @@ ms.$set 'api', 'ws'
 # Extends the result with additional items throught the social graph: req.interests
 extend = (req, res, next) ->
   res = [] unless res instanceof Array
-  ###
-  if res.recommendation < req.count
-    res.recommendations
-    # Extend the request with globalized content
-  ###
+  # Extention
 
   next req, res
 

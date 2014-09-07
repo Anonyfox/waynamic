@@ -115,8 +115,6 @@ user.activities = (req, res, next) ->
     for like in likes
       like.rating /= max
 
-
-
     req.activities = likes
     console.log req.activities
     next req, res

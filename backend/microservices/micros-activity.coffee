@@ -23,7 +23,7 @@ activity.filter = (req, res, next) ->
   for item in req.activities
     # Filter elements throgh interests and key word clouds
     correlation = interests.reduce( (akk, interest) ->
-      if _.contains item.tags, interest.name
+      if _.contains item.metatags, interest.name
         # A stronger weight on postive likes ageinst negativ feedback or unknown items
         akk += (interest.like * interest.like)
       else akk

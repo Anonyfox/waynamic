@@ -92,8 +92,8 @@ user.sfriends = (req, res, next) ->
 user.activities = (req, res, next) ->
   db.query """
     START User=node({userID})
-    MATCH (User)-[like:`like`]->(#{req.type})
-    RETURN id(Picture) AS _id, Picture.title AS title, Picture.url AS url, like.updated AS updated
+    MATCH (User)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)
+    RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, collect(Metatag.name) AS metatags, like.rating AS rating, like.updated AS updated
     ORDER BY updated DESC
     LIMIT 100
   """, userID:req.user , (error, likes) ->

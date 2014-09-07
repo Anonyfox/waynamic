@@ -12,7 +12,7 @@ qc_feeback = 1
 
 # Calculate normalization: req.recommendations, req.activities
 # Normalization means the readjustment of predictions against the qualifier
-# the readjsutment works with the personal tie strength and the freinds own feedback
+# the readjsutment works with the personal tie strength and the own item-feedback from friends
 normalize = (req, res, next) ->
   recos = req.recos.reduce( (akk, reco) ->
     feedback = reco.item.feedback

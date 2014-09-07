@@ -91,21 +91,31 @@ user.sfriends = (req, res, next) ->
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
   db.query """
-    START User=node({userID})
+    START User=node({userID}), Current=node(#{req.current_user})
     MATCH (User)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)
+    WHERE not (Current)-[:`like`]->(Media)
     RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, collect(Metatag.name) AS metatags, like.rating AS rating, like.updated AS updated
     ORDER BY updated DESC
     LIMIT 100
   """, userID:req.user , (error, likes) ->
-    console.log error
     # example:
     # likes = [
-    #   { _id:238561, title:'Tranquil Misty Dawn', url:'https://farm6.staticflickr.com/5578/14180193348_00d924f364.jpg', updated:1410016227069},
-    #   { _id:235797, title:'Transformación de Luz', url:'https://farm4.staticflickr.com/3845/14174050520_b662863b9c.jpg', updated:1410016225268}
+    #   { _id:238561, title:'Tranquil Misty Dawn', url:'https://farm6.staticflickr.com/5578/14180193348_00d924f364.jpg', metatags:[…], rating:1, updated:1410016227069},
+    #   { _id:235797, title:'Transformación de Luz', url:'https://farm4.staticflickr.com/3845/14174050520_b662863b9c.jpg', metatags:[…], rating:1, updated:1410016225268}
     # ]
-    # more informations needed: tags, feedback
     # only activities that hasnt been seen by current_user
-    # Filter Activities that has already been seen by current_user
+
+    # weight by last visit date
+    count = likes.length
+    max = 0
+    for like, i in likes
+      like.rating *= 1.0*(count-i)/count
+      max = like.rating if like.rating > max
+    # normalize
+    for like in likes
+      like.rating /= max
+
+
 
     req.activities = likes
     console.log req.activities

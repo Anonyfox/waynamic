@@ -83,33 +83,22 @@ Micros = require 'micros'
 Splitter = Micros.Splitter
 Chain = Micros.Chain
 MicroService = Micros.MicroService
-register = {}
+# All Services as an Array
+services = []
 
 Micros.set 'ms_folder', 'microservices'
 Micros.set 'start_port', '4501'
-Micros.spawn (service) -> eval "#{service.$name} = service"
+Micros.spawn (service) ->
+  eval "#{service.$name} = service"
+  services.push service
 
 
 
 # --- Routing Service -----------------------------------------------------------
 
-router = new MicroService 'router'
-router.$set 'api', 'ws'
+router = new Micros.Router
 router.$set 'port', 4500
-
-runtime = (req, res, next) ->
-
-runtime.finish = (req, res, next) ->
-  console.log req, res
-  if register[req.key]?
-    register[req.key] res
-    delete register[req.key]
-
-router.$install runtime
 router.$listen -> console.log "Started routing service on port 4500"
-
-generate_router_key = (req) ->
-  "#{req.socket.remoteAddress}:#{req.socket.remotePort}:#{(Math.floor((do Math.random) * 10**8))}"
 
 
 
@@ -178,11 +167,22 @@ app.get '/users/:id/pictures', (req, res) ->
       current: (cb) ->
         return cb null, {} unless req.query._id
         Pictures.one req.query._id, cb
+
       recommendations: (cb) ->
-        # here be dragons - get real recommendations:
-        dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
-        recommendations = _.times count_rec, ->dummy
-        cb null, recommendations
+        # dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
+        # Start the MicroChain
+        if count_rec > 0
+          # Register Callback
+          request = router.$register req, (recommendations) -> cb null, recommendations
+          # Set request paramezers
+          request.user = user._id                                 # id
+          request.type = 'Picture'                                # Picture
+          request.count = count_rec                                # number of recommednations
+          request.context = req.query._id if req.query.__dirname  # The recommendation context
+          # Start the chain with event loop
+          setTimeout (-> router.$exec reco, request), 0
+        else cb null, []
+
       trainingset: (cb) ->
         Pictures.random count_ts, (err, pictures) ->
           pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'
@@ -246,30 +246,6 @@ app.get '/music', (req,res) ->
   iTunes.music.find term:term, limit:9, (err, result) ->
     return res.end err.message if err
     return res.json result
-
-
-
-# ------------------------------------------------------------------------------
-
-app.get '/recommendations', (req,res) ->
-  # hard data for debugging:
-  Users.all (err,users) ->
-    return res.end 'ERROR: no user available' unless users[0]
-
-    # Start the MicroChain
-    key = generate_router_key req
-    # Set request paramezers
-    request =
-      key: key                     # dragons: move to micros.coffee
-      current_user: users[0]._id   # id
-      type: 'Picture'              # Picture
-      count: 8                     # 8 recommednations requested
-      context: req.body.context    # ????????
-    # Register Callback
-    register[key] = (data) -> res.json data
-    setTimeout (-> reco.exec request), 0
-
-
 
 # --- start server  ------------------------------------------------------------
 

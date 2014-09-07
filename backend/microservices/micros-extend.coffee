@@ -15,7 +15,6 @@ extend = (req, res, next) ->
     # Extend the request with globalized content
   ###
 
-  res.push { id: 19 }
   next req, res
 
 ms.$install extend

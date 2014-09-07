@@ -8,7 +8,7 @@ MicroService = require('micros').MicroService
 ms = new MicroService 'activity'
 ms.$set 'api', 'ws'
 
-qc = 0.5
+qc = 0.01
 
 # Dummy
 activity = (req, res, next) ->
@@ -16,17 +16,26 @@ activity = (req, res, next) ->
   next req, res
 
 # The Activity Filter (req.activities, req.interests, req.context, req.type)
+# Filters all Activities from friends with the interest profile
 activity.filter = (req, res, next) ->
-  ###
-  req.recommendations = []
-  for act in req.activities
-    quality = 0
-    (quality = quality + req.interests[key]) for key in _.contains req.interests, key
-    quality = quality / req.interests.length
-    req.recommendations.push { item: act, friend: req.user, quality: quality } if quality > qc
-  req.activities = req.activities.length
-  ###
+  req.recos = []
+  interests = req.interests['dc:keyword']
+  for item in req.activities
+    # Filter elements throgh interests and key word clouds
+    correlation = interests.reduce( (akk, interest) ->
+      if _.contains item.tags, interest.name
+        # A stronger weight on postive likes ageinst negativ feedback or unknown items
+        akk += (interest.like * interest.like)
+      else akk
+    , 0)
+    req.recos.push({
+      item: _.pick item, ['url', 'title', 'feedback']
+      friend: req.user
+      prediction: correlation
+    }) if correlation >= qc
 
+  console.log req.recos
+  delete req.activities
   next req, res
 
 ms.$install activity

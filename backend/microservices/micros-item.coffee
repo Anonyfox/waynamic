@@ -21,6 +21,7 @@ item.aggregate = (reqs, ress, next) ->
     for reco in req.recos
       index = _.sortedIndex recommendations, reco, 'prediction'
       if index <= count
+        delete reco.item.rating
         reco.friend =
           _id: req.user
           firstName: req.firstName

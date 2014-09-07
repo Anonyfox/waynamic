@@ -173,7 +173,10 @@ app.get '/users/:id/pictures', (req, res) ->
         # Start the MicroChain
         if count_rec > 0
           # Register Callback
-          request = router.$register req, (recommendations) -> cb null, recommendations
+          request = router.$register req, (recommendations) ->
+            recommendations = _.map recommendations, (r) ->
+              {_id:r.item._id, url:r.item.url, subtitle:"#{r.friend.firstName} #{r.friend.lastName} mag dieses Bild"}
+            cb null, recommendations
           # Set request paramezers
           request.user = user._id                                 # id
           request.type = 'Picture'                                # Picture

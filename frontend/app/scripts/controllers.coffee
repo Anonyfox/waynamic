@@ -23,7 +23,12 @@ angular.module('app.controllers', [])
 ])
 
 .controller('ProfileCtrl', ['$scope', 'User', ($scope, User) ->
+  User.getUserProfile()
 
+  # Re-render start screen on user change
+  $scope.$watch "users.current._id", (oldValue, newValue) ->
+    if oldValue isnt newValue
+      User.getUserProfile()
 ])
 
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->

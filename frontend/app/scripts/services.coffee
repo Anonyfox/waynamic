@@ -22,8 +22,8 @@ angular.module('app.services', [])
     getUserProfile: (fn) ->
       $http.get("/users/#{$rootScope.users.current._id}/profile").then(
         (data) ->
-          $rootScope.current.friends = data.data.friends
-          $rootScope.current.history = data.data.history
+          $rootScope.users.current.friends = data.data.friends
+          $rootScope.users.current.history = data.data.history
           fn? null, $rootScope.current
         (data) -> fn? null, {}
       )

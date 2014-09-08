@@ -9,6 +9,8 @@ App.config([
       templateUrl: '/partials/landingpage.html'
     }).when('/pictures', {
       templateUrl: '/partials/pictures.html'
+    }).when('/profile', {
+      templateUrl: '/partials/profile.html'
     }).otherwise({
       redirectTo: '/'
     });
@@ -39,7 +41,16 @@ angular.module('app.controllers', []).controller('AppCtrl', [
     };
     return User.getAllUsers();
   }
-]).controller('ProfileCtrl', ['$scope', 'User', function($scope, User) {}]).controller('PicturesCtrl', [
+]).controller('ProfileCtrl', [
+  '$scope', 'User', function($scope, User) {
+    User.getUserProfile();
+    return $scope.$watch("users.current._id", function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        return User.getUserProfile();
+      }
+    });
+  }
+]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
     if (!$rootScope.Current.list.length) {
       Pictures.getInitialPics();
@@ -115,8 +126,8 @@ angular.module('app.services', []).service("User", [
       },
       getUserProfile: function(fn) {
         return $http.get("/users/" + $rootScope.users.current._id + "/profile").then(function(data) {
-          $rootScope.current.friends = data.data.friends;
-          $rootScope.current.history = data.data.history;
+          $rootScope.users.current.friends = data.data.friends;
+          $rootScope.users.current.history = data.data.history;
           return typeof fn === "function" ? fn(null, $rootScope.current) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn(null, {}) : void 0;

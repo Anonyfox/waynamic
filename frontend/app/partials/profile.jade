@@ -4,7 +4,9 @@ div(ng-controller="ProfileCtrl")
   hr
 
   h3 Friends: {{17}}
-  ul: li(ng-repeat="friend in users.current.friends") {{friend.firstName}} {{friend.lastName}}
+  //- ul: li(ng-repeat="friend in users.current.friends") {{friend.firstName}} {{friend.lastName}}
+  .well
+    a.btn(href="#", ng-click="switchUserTo(f._id)", ng-repeat="f in users.current.friends") {{f.firstName}} {{f.lastName}}
 
   hr
 

@@ -1,1 +1,180 @@
-"use strict";var App;App=angular.module("app",["ngCookies","ngResource","ngRoute","app.controllers","app.directives","app.filters","app.services","partials"]),App.config(["$routeProvider","$locationProvider",function(e,r){return e.when("/",{templateUrl:"/partials/landingpage.html"}).when("/pictures",{templateUrl:"/partials/pictures.html"}).when("/profile",{templateUrl:"/partials/profile.html"}).otherwise({redirectTo:"/"}),r.html5Mode(!1)}]),angular.module("app.controllers",[]).controller("AppCtrl",["$scope","$location","$resource","$rootScope",function(e,r){return e.$location=r,e.$watch("$location.path()",function(r){return e.activeNavId=r||"/"}),e.getClass=function(r){return e.activeNavId.substring(0,r.length)===r?"active":""}}]).controller("NavCtrl",["$scope","User",function(e,r){return e.changeSelectedUser=function(e){return r.setCurrentUser(e)},r.getAllUsers()}]).controller("ProfileCtrl",["$scope","User",function(e,r){return r.getUserProfile(),e.$watch("users.current._id",function(e,t){return e!==t?r.getUserProfile():void 0})}]).controller("PicturesCtrl",["$scope","$rootScope","Pictures","User",function(e,r,t){return r.Current.list.length||t.getInitialPics(),e.$watch("users.current._id",function(e,r){return e!==r?t.getInitialPics():void 0}),e.feedback=function(e){var n;return $("#pictures-view").hide(),n=_.extend(r.Current,{clicked:e}),t.getPicsByFeedback(n,function(){return $("#pictures-view").fadeIn()})}}]),angular.module("app.directives",["app.services"]).directive("appVersion",["version",function(e){return function(r,t){return t.text(e)}}]),angular.module("app.filters",[]).filter("interpolate",["version",function(e){return function(r){return String(r).replace(/\%VERSION\%/gm,e)}}]),angular.module("app.services",[]).service("User",["$http","$rootScope",function(e,r){return r.users={list:[],current:{_id:-1,name:""}},{currentUserId:function(){return r.users.current._id},setCurrentUser:function(e){return r.users.current=_.pick(e,"_id","name")},setCurrentUserById:function(e){return r.users.current=_.find(r.users.list,function(r){return r._id===e})},getAllUsers:function(t){return e.get("/users").then(function(e){return r.users.list=_.map(e.data,function(e){return{_id:e._id,name:"#"+e._id+" "+e.firstName+" "+e.lastName}}),"function"==typeof t?t(null,r.users.list):void 0},function(){return"function"==typeof t?t(null,[]):void 0})},getUserProfile:function(t){return e.get("/users/"+r.users.current._id+"/profile").then(function(e){return r.users.currentFriends=e.data.friends,r.users.currentHistory=e.data.history,"function"==typeof t?t(null,r.current):void 0},function(){return"function"==typeof t?t(null,{}):void 0})}}}]).service("Pictures",["$http","$rootScope","User",function(e,r,t){return r.Current={list:[],current:{_id:0,url:""}},{getPicsByFeedback:function(n,i){return e.post("/users/"+t.currentUserId()+"/pictures",n).then(function(e){return r.Current=e.data,"function"==typeof i?i(null,e.data):void 0},function(){return"function"==typeof i?i({error:"Something went wrong. Flickr unavailable?"},null):void 0})},getInitialPics:function(n){return e.get("/users/"+t.currentUserId()+"/pictures").then(function(e){return r.Current=e.data,"function"==typeof n?n(null,e.data):void 0},function(){return"function"==typeof n?n({error:"Something went wrong. Flickr unavailable?"},null):void 0})}}}]);
+'use strict';
+var App;
+
+App = angular.module('app', ['ngCookies', 'ngResource', 'ngRoute', 'app.controllers', 'app.directives', 'app.filters', 'app.services', 'partials']);
+
+App.config([
+  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider, config) {
+    $routeProvider.when('/', {
+      templateUrl: '/partials/landingpage.html'
+    }).when('/pictures', {
+      templateUrl: '/partials/pictures.html'
+    }).when('/profile', {
+      templateUrl: '/partials/profile.html'
+    }).otherwise({
+      redirectTo: '/'
+    });
+    return $locationProvider.html5Mode(false);
+  }
+]);
+;'use strict';
+/* Controllers*/
+
+angular.module('app.controllers', []).controller('AppCtrl', [
+  '$scope', '$location', '$resource', '$rootScope', function($scope, $location, $resource, $rootScope) {
+    $scope.$location = $location;
+    $scope.$watch('$location.path()', function(path) {
+      return $scope.activeNavId = path || '/';
+    });
+    return $scope.getClass = function(id) {
+      if ($scope.activeNavId.substring(0, id.length) === id) {
+        return 'active';
+      } else {
+        return '';
+      }
+    };
+  }
+]).controller('NavCtrl', [
+  '$scope', 'User', function($scope, User) {
+    $scope.changeSelectedUser = function(u) {
+      return User.setCurrentUser(u);
+    };
+    return User.getAllUsers();
+  }
+]).controller('ProfileCtrl', [
+  '$scope', 'User', function($scope, User) {
+    User.getUserProfile();
+    $scope.$watch("users.current._id", function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        return User.getUserProfile();
+      }
+    });
+    return $scope.switchUserTo = function(id) {
+      return User.setCurrentUserById(id);
+    };
+  }
+]).controller('PicturesCtrl', [
+  '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
+    if (!$rootScope.Current.list.length) {
+      Pictures.getInitialPics();
+    }
+    $scope.$watch("users.current._id", function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        return Pictures.getInitialPics();
+      }
+    });
+    return $scope.feedback = function(_id) {
+      var postBody;
+      $("#pictures-view").hide();
+      postBody = _.extend($rootScope.Current, {
+        clicked: _id
+      });
+      return Pictures.getPicsByFeedback(postBody, function(error, result) {
+        return $("#pictures-view").fadeIn();
+      });
+    };
+  }
+]);
+;'use strict';
+/* Directives*/
+
+angular.module('app.directives', ['app.services']).directive('appVersion', [
+  'version', function(version) {
+    return function(scope, elm, attrs) {
+      return elm.text(version);
+    };
+  }
+]);
+;'use strict';
+/* Filters*/
+
+angular.module('app.filters', []).filter('interpolate', [
+  'version', function(version) {
+    return function(text) {
+      return String(text).replace(/\%VERSION\%/mg, version);
+    };
+  }
+]);
+;'use strict';
+/* Sevices*/
+
+angular.module('app.services', []).service("User", [
+  "$http", "$rootScope", function($http, $rootScope) {
+    $rootScope.users = {
+      list: [],
+      current: {
+        _id: -1,
+        name: ""
+      }
+    };
+    return {
+      currentUserId: function() {
+        return $rootScope.users.current._id;
+      },
+      setCurrentUser: function(u) {
+        return $rootScope.users.current = _.pick(u, "_id", "name");
+      },
+      setCurrentUserById: function(id) {
+        return $rootScope.users.current = _.find($rootScope.users.list, function(u) {
+          return u._id === id;
+        });
+      },
+      getAllUsers: function(fn) {
+        return $http.get("/users").then(function(data) {
+          $rootScope.users.list = _.map(data.data, function(u) {
+            return {
+              _id: u._id,
+              name: "#" + u._id + " " + u.firstName + " " + u.lastName
+            };
+          });
+          return typeof fn === "function" ? fn(null, $rootScope.users.list) : void 0;
+        }, function(data) {
+          return typeof fn === "function" ? fn(null, []) : void 0;
+        });
+      },
+      getUserProfile: function(fn) {
+        return $http.get("/users/" + $rootScope.users.current._id + "/profile").then(function(data) {
+          $rootScope.users.currentFriends = data.data.friends;
+          $rootScope.users.currentHistory = data.data.history;
+          return typeof fn === "function" ? fn(null, $rootScope.current) : void 0;
+        }, function(data) {
+          return typeof fn === "function" ? fn(null, {}) : void 0;
+        });
+      }
+    };
+  }
+]).service("Pictures", [
+  "$http", "$rootScope", "User", function($http, $rootScope, User) {
+    $rootScope.Current = {
+      list: [],
+      current: {
+        _id: 0,
+        url: ""
+      }
+    };
+    return {
+      getPicsByFeedback: function(postBody, fn) {
+        return $http.post("/users/" + (User.currentUserId()) + "/pictures", postBody).then(function(data) {
+          $rootScope.Current = data.data;
+          return typeof fn === "function" ? fn(null, data.data) : void 0;
+        }, function(data) {
+          return typeof fn === "function" ? fn({
+            error: "Something went wrong. Flickr unavailable?"
+          }, null) : void 0;
+        });
+      },
+      getInitialPics: function(fn) {
+        return $http.get("/users/" + (User.currentUserId()) + "/pictures").then(function(data) {
+          $rootScope.Current = data.data;
+          return typeof fn === "function" ? fn(null, data.data) : void 0;
+        }, function(data) {
+          return typeof fn === "function" ? fn({
+            error: "Something went wrong. Flickr unavailable?"
+          }, null) : void 0;
+        });
+      }
+    };
+  }
+]);
+;
+//# sourceMappingURL=app.js.map

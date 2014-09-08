@@ -5,7 +5,7 @@ div(ng-controller="ProfileCtrl")
 
   h3 Friends: {{users.currentFriends.length}}
   .well.text-center
-    button.btn(ng-click="switchUserTo(f._id)", ng-repeat="f in users.current.friends", style="margin: 5px;") {{f.firstName}} {{f.lastName}}
+    button.btn(ng-click="switchUserTo(f._id)", ng-repeat="f in users.currentFriends", style="margin: 5px;") {{f.firstName}} {{f.lastName}}
 
   hr
 

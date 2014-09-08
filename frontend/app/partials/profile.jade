@@ -3,7 +3,7 @@ div(ng-controller="ProfileCtrl")
 
   hr
 
-  h3 Friends: {{users.current.friends.length}}
+  h3 Friends: {{users.currentFriends.length}}
   .well.text-center
     button.btn(ng-click="switchUserTo(f._id)", ng-repeat="f in users.current.friends", style="margin: 5px;") {{f.firstName}} {{f.lastName}}
 
@@ -11,7 +11,7 @@ div(ng-controller="ProfileCtrl")
 
   h3 History:
 
-  .media(ng-repeat="m in users.current.history")
+  .media(ng-repeat="m in users.currentHistory")
     a.pull-left(href="#")
       img.media-object(ng-src="{{m.url}}")
     .media-body

@@ -72,7 +72,6 @@ MediaApi.Flickr = (api_key) ->
     ], cb
 
   filter.correctness = (pic, cb) ->
-    console.log /[\w]{2,}/.test pic.title
     return cb new Error "SKIPPED: picture not valide" unless (
       pic? and
       typeof pic.url is 'string' and

@@ -218,7 +218,7 @@ app.get '/pictures', (req, res) ->
   keywords = keywords.split ',' unless keywords instanceof Array
   opts =
     keywords:keywords
-    limit:12
+    limit:req.query.limit
   Flickr.find opts, (err, pictures) ->
     if err
       console.log "ERROR: #{err.message}"
@@ -231,7 +231,11 @@ app.get '/pictures', (req, res) ->
 # query:  http://localhost:4343/pictures/hot
 # trainingset: top pictures of the last year
 app.get '/pictures/hot', (req, res) ->
-  Flickr.hot limit:12, (err, pictures) ->
+  matches = req.query.date.match /^(\d{4})-(\d{2})-(\d{2})$/
+  opts =
+    limit: req.query.limit?
+    date: if matches then new Date matches[1], matches[2]-1, matches[3] else undefined
+  Flickr.hot opts, (err, pictures) ->
     if err
       console.log "ERROR: #{err.message}"
       res.json {}

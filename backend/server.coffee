@@ -195,20 +195,6 @@ app.get '/users/:id/pictures', (req, res) ->
         return res.json all
 
 
-testchain = user.interests -> router.finish
-app.get '/users/:id/pictures/interests', (req, res) ->
-  Users.one req.params.id, (err, user) ->
-    return app.end 'no valid user' unless user._id?
-    key = generate_router_key req
-    request =
-      key: key                     # dragons: move to micros.coffee
-      current_user: user._id       # id
-      type: 'Picture'              # Picture
-
-    register[key] = (data) -> res.json data
-    setTimeout (-> testchain.exec request), 0
-
-
 
 # --- media proxies ------------------------------------------------------------
 

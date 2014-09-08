@@ -52,9 +52,9 @@ user.interests = (req, res, next) ->
       metataglist = _.filter metataglist, (metatag) -> metatag.like > 0
       metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
       metataglist = metataglist[0...50]
-
+      interests[metatype] = metataglist
     req.interests = interests
-    #console.log interests
+    console.log interests
     next req, res
 
 # The Friends from a user: req.user as a Scatter
@@ -92,13 +92,13 @@ user.sfriends = (req, res, next) ->
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
   db.query """
-    START User=node({userID}), Current=node(#{req.current_user})
+    START User=node({friend}), Current=node({user})
     MATCH (User)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)
     WHERE not (Current)-[:`like`]->(Media)
     RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, collect(Metatag.name) AS metatags, like.rating AS rating, like.updated AS updated
     ORDER BY updated DESC
     LIMIT 100
-  """, userID:req.user , (error, likes) ->
+  """, friend:req.user, user:req.current_user, (error, likes) ->
     # example:
     # likes = [
     #   { _id:238561, title:'Tranquil Misty Dawn', url:'https://farm6.staticflickr.com/5578/14180193348_00d924f364.jpg', metatags:[…], rating:1, updated:1410016227069},

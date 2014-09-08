@@ -8,9 +8,9 @@ ul.nav
 
 form.navbar-form.pull-right
   select(
-    ng-model="selectedUser",
+    ng-model="users.current",
     ng-options="u.name for u in users.list",
-    ng-change="changeSelectedUser(selectedUser)"
+    ng-change="changeSelectedUser(users.current)"
   )
     //- option(ng-repeat="u in allUsers", value="u._id")
     //-   |[{{u._id}}]

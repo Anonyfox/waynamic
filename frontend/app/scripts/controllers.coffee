@@ -29,6 +29,9 @@ angular.module('app.controllers', [])
   $scope.$watch "users.current._id", (oldValue, newValue) ->
     if oldValue isnt newValue
       User.getUserProfile()
+
+  $scope.switchUserTo = (id) ->
+    User.setCurrentUserById id
 ])
 
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->

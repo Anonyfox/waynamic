@@ -7,11 +7,12 @@ angular.module('app.services', [])
 .service("User", ["$http", "$rootScope", ($http, $rootScope) ->
   $rootScope.users = {
     list: []
-    current: {_id: 0, name: ""}
+    current: {_id: -1, name: ""}
   }
   return {
     currentUserId: -> $rootScope.users.current._id
     setCurrentUser: (u) -> $rootScope.users.current = u
+    setCurrentUserById: (id) -> $rootScope.users.current = _.find $rootScope.users.list, (u) -> u._id is id
     getAllUsers: (fn) ->
       $http.get("/users").then(
         (data) ->

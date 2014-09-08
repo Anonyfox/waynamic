@@ -12,17 +12,17 @@ angular.module('partials', [])
 '  <li ng-class="getClass(\'/profile\')"><a ng-href="#/profile"><i class="fa fa-user"></i> Profile</a></li>',
 '</ul>',
 '<form class="navbar-form pull-right">',
-'  <select ng-model="selectedUser" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(selectedUser)">',
+'  <select ng-model="users.current" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(users.current)">',
 '  </select>',
 '</form>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
 '',
-'<div ng-if="users.current._id == 0">',
+'<div ng-if="users.current._id == -1">',
 '  <h3>Please choose a user !</h3>',
 '</div>',
-'<div ng-if="users.current._id != 0">',
+'<div ng-if="users.current._id != -1">',
 '  <div id="pictures-view" ng-controller="PicturesCtrl">',
 '    <div ng-if="Current.current.url">',
 '      <ul class="thumbnails">',
@@ -52,10 +52,12 @@ angular.module('partials', [])
   return $templateCache.put('/partials/profile.html', [
 '',
 '<div ng-controller="ProfileCtrl">',
-'  <h1>{{users.current.firstName}} {{users.current.lastName}}</h1>',
+'  <h1>{{users.current.name}}</h1>',
 '  <hr>',
-'  <h3>Friends: {{17}}</h3>',
-'  <div class="well"><a href="#" ng-click="switchUserTo(f._id)" ng-repeat="f in users.current.friends" class="btn">{{f.firstName}} {{f.lastName}}</a></div>',
+'  <h3>Friends: {{users.current.friends.length}}</h3>',
+'  <div class="well text-center">',
+'    <button ng-click="switchUserTo(f._id)" ng-repeat="f in users.current.friends" style="margin: 5px;" class="btn">{{f.firstName}} {{f.lastName}}</button>',
+'  </div>',
 '  <hr>',
 '  <h3>History:</h3>',
 '  <div ng-repeat="m in users.current.history" class="media"><a href="#" class="pull-left"><img ng-src="{{m.url}}" class="media-object"></a>',

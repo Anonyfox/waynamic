@@ -134,6 +134,13 @@ app.get '/users/:id', (req, res) ->
     return res.end err.message if err
     return res.json result
 
+app.get '/users/:id/profile', (req, res) ->
+  async.series
+    history: (cb) ->
+      Users.history req.params.id, 'Picture', cb
+    , (err, all) ->
+      res.json all
+
 
 
 # --- recommendation routes ----------------------------------------------------

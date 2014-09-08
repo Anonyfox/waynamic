@@ -11,7 +11,7 @@ angular.module('app.services', [])
   }
   return {
     currentUserId: -> $rootScope.users.current._id
-    setCurrentUser: (u) -> $rootScope.users.current = _.pick u, "_id", "name"
+    setCurrentUser: (u) -> $rootScope.users.current = _.find $rootScope.users.list, (us) -> us._id is u._id
     setCurrentUserById: (id) -> $rootScope.users.current = _.find $rootScope.users.list, (u) -> u._id is id
     getAllUsers: (fn) ->
       $http.get("/users").then(

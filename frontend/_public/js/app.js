@@ -112,7 +112,9 @@ angular.module('app.services', []).service("User", [
         return $rootScope.users.current._id;
       },
       setCurrentUser: function(u) {
-        return $rootScope.users.current = _.pick(u, "_id", "name");
+        return $rootScope.users.current = _.find($rootScope.users.list, function(us) {
+          return us._id === u._id;
+        });
       },
       setCurrentUserById: function(id) {
         return $rootScope.users.current = _.find($rootScope.users.list, function(u) {

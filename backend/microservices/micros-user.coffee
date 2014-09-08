@@ -61,7 +61,7 @@ user.sfriends = (req, res, next) ->
   db.query """
     START User=node({userID})
     MATCH (User)-[:`foaf:knows`]->(Friends)
-    RETURN id(Friends) AS _id, Friends.firstName AS firstName, Friends.lastName AS lastName
+    RETURN DISTINCT id(Friends) AS _id, Friends.firstName AS firstName, Friends.lastName AS lastName
   """, userID:req.user, (error, friends) ->
   # example:
   # friends = [

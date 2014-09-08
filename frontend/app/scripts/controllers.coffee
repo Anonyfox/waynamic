@@ -36,7 +36,7 @@ angular.module('app.controllers', [])
 
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
   # Start Screen
-  Pictures.getInitialPics() unless $rootScope.Current.list.length
+  Pictures.getInitialPics()
 
   # Re-render start screen on user change
   $scope.$watch "users.current._id", (oldValue, newValue) ->

@@ -1,5 +1,10 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/landingpage.html', [
+'',
+'<h1>awesome landingpage here.</h1>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/nav.html', [
 '',
 '<ul class="nav">',
@@ -12,11 +17,6 @@ angular.module('partials', [])
 '</form>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/landingpage.html', [
-'',
-'<h1>awesome landingpage here.</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
 '',
 '<div ng-if="users.current._id == -1">',
@@ -24,25 +24,15 @@ angular.module('partials', [])
 '</div>',
 '<div ng-if="users.current._id != -1">',
 '  <div id="pictures-view" ng-controller="PicturesCtrl">',
-'    <div ng-if="Current.current.url">',
-'      <ul class="thumbnails">',
-'        <li ng-show="Current" class="span12">',
-'          <div class="thumbnail">',
-'            <!-- here be dragons: how to write this in a if statement--><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer; height:300px; margin-left:0px; margin-right:20px; float:left;">',
-'            <div class="caption">',
-'              <h1>{{Current.current.title}}</h1><span ng-repeat="tag in Current.current.tags" style="margin:5px; padding:5px;" class="label">{{tag}}</span>',
-'            </div>',
-'            <div style="clear:left;"></div>',
-'          </div>',
-'        </li>',
-'      </ul>',
+'    <div ng-if="Current.current.url" class="text-center"><img ng-src="{{Current.current.url}}" alt="" ng-click="feedback(Current.current._id)" style="cursor:pointer;">',
 '    </div>',
+'    <hr>',
 '    <ul class="thumbnails">',
-'      <li ng-repeat="picture in Current.recommendations" class="span3">',
-'        <div class="thumbnail"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
+'      <li ng-repeat="picture in Current.recommendations" style="background-color: #FFF7F0;" class="span3">',
+'        <div class="thumbnail text-center"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
-'      <li ng-repeat="picture in Current.trainingset" class="span3">',
-'        <div class="thumbnail"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
+'      <li ng-repeat="picture in Current.trainingset" style="background-color: #E8F6FF;" class="span3">',
+'        <div class="thumbnail text-center"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
 '    </ul>',
 '  </div>',
@@ -52,18 +42,19 @@ angular.module('partials', [])
   return $templateCache.put('/partials/profile.html', [
 '',
 '<div ng-controller="ProfileCtrl">',
-'  <h1>{{users.current.name}}</h1>',
-'  <hr>',
-'  <h3>Friends: {{users.currentFriends.length}}</h3>',
-'  <div class="well text-center">',
-'    <button ng-click="switchUserTo(f._id)" ng-repeat="f in users.currentFriends" style="margin: 5px;" class="btn">{{f.firstName}} {{f.lastName}}</button>',
+'  <h1 class="text-center">{{users.current.name}}</h1>',
+'  <div style="background: rgba(255,255,255,0.7); margin-bottom: 20px;" class="text-center">',
+'    <h3>Friends: {{users.currentFriends.length}}</h3>',
+'    <button ng-click="switchUserTo(f._id)" ng-repeat="f in users.currentFriends" style="margin: 5px;" class="btn btn-link"><i class="fa fa-user"></i> {{f.firstName}} {{f.lastName}}</button>',
 '  </div>',
-'  <hr>',
-'  <h3>History:</h3>',
-'  <div ng-repeat="m in users.currentHistory" class="media"><a href="#" class="pull-left"><img ng-src="{{m.url}}" class="media-object"></a>',
-'    <div class="media-body">',
-'      <h4 class="media-heading">{{m.title}}</h4>',
-'      <p>clicked on {{m.updated}}</p>',
+'  <div class="row">',
+'    <div ng-repeat="m in users.currentHistory" class="span4">',
+'      <div style="background: rgba(255,255,255,0.5); margin-bottom: 20px;" class="media"><a class="pull-left"><img ng-src="{{m.url}}" style="height: 75px; width: 75px;" class="media-object"></a>',
+'        <div class="media-body">',
+'          <h4 class="media-heading">{{m.title | shortText}}</h4>',
+'          <p>clicked on {{m.updated | date : \'shortDate\'}}</p>',
+'        </div>',
+'      </div>',
 '    </div>',
 '  </div>',
 '</div>',''].join("\n"));

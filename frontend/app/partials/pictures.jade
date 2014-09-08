@@ -2,23 +2,18 @@ div(ng-if="users.current._id == -1")
   h3 Please choose a user !
 div(ng-if="users.current._id != -1")
   div#pictures-view(ng-controller="PicturesCtrl")
-    div(ng-if="Current.current.url")
-      ul.thumbnails
-        li.span12(ng-show="Current")
-          .thumbnail
-            // here be dragons: how to write this in a if statement
-            img(ng-src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer; height:300px; margin-left:0px; margin-right:20px; float:left;")
-            .caption
-              h1 {{Current.current.title}}
-              span.label(ng-repeat="tag in Current.current.tags", style="margin:5px; padding:5px;") {{tag}}
-                //- button.btn.btn-link(ng-click="nextPicturesByTag(tag)", ng-repeat="tag in Current.current.tags") {{tag}}
-            div(style="clear:left;")
+    div.text-center(ng-if="Current.current.url")
+      //- h3 {{Current.current.title}}
+      img(ng-src="{{Current.current.url}}", alt="", ng-click="feedback(Current.current._id)", style="cursor:pointer;")
+
+    hr
+
     ul.thumbnails
-      li.span3(ng-repeat="picture in Current.recommendations")
-        .thumbnail
+      li.span3(ng-repeat="picture in Current.recommendations", style="background-color: #FFF7F0;")
+        .thumbnail.text-center
           img(ng-src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
           {{picture.subtitle}}
-      li.span3(ng-repeat="picture in Current.trainingset")
-        .thumbnail
+      li.span3(ng-repeat="picture in Current.trainingset", style="background-color: #E8F6FF;")
+        .thumbnail.text-center
           img(ng-src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
           {{picture.subtitle}}

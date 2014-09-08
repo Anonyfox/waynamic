@@ -55,9 +55,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
   }
 ]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
-    if (!$rootScope.Current.list.length) {
-      Pictures.getInitialPics();
-    }
+    Pictures.getInitialPics();
     $scope.$watch("users.current._id", function(oldValue, newValue) {
       if (oldValue !== newValue) {
         return Pictures.getInitialPics();
@@ -92,6 +90,12 @@ angular.module('app.filters', []).filter('interpolate', [
   'version', function(version) {
     return function(text) {
       return String(text).replace(/\%VERSION\%/mg, version);
+    };
+  }
+]).filter('shortText', [
+  function() {
+    return function(str) {
+      return str.slice(0, 30);
     };
   }
 ]);

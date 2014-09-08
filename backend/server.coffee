@@ -178,7 +178,7 @@ app.get '/users/:id/pictures', (req, res) ->
         return cb null, {} unless req.query._id
         Pictures.one req.query._id, (err, picture) ->
           picture.url = picture.url.replace /\.jpg$/, '_o.jpg'
-          cb err,
+          cb err, picture
 
       recommendations: (cb) ->
         # dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'

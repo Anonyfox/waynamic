@@ -56,7 +56,7 @@ angular.module('partials', [])
 '  <hr>',
 '  <h3>Friends: {{users.currentFriends.length}}</h3>',
 '  <div class="well text-center">',
-'    <button ng-click="switchUserTo(f._id)" ng-repeat="f in users.current.friends" style="margin: 5px;" class="btn">{{f.firstName}} {{f.lastName}}</button>',
+'    <button ng-click="switchUserTo(f._id)" ng-repeat="f in users.currentFriends" style="margin: 5px;" class="btn">{{f.firstName}} {{f.lastName}}</button>',
 '  </div>',
 '  <hr>',
 '  <h3>History:</h3>',

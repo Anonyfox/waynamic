@@ -67,7 +67,7 @@ angular.module('partials', [])
 '        <div class="thumbnail"><img src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
 '      <li ng-repeat="picture in Current.trainingset" class="span3">',
-'        <div class="thumbnail"><img src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
+'        <div class="thumbnail"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
 '    </ul>',
 '  </div>',
@@ -83,26 +83,4 @@ angular.module('partials', [])
   return $templateCache.put('/partials/register.html', [
 '',
 '<h1>registration page here</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/todo.html', [
-'',
-'<div ng-app="ng-app">',
-'  <h2>Todo</h2>',
-'  <div ng-controller="TodoCtrl"><span>{{remaining()}} of {{todos.length}} remaining</span> [<a href="" ng-click="archive()">archive</a>]',
-'    <ul class="unstyled">',
-'      <li ng-repeat="todo in todos">',
-'        <label class="checkbox inline">',
-'          <input type="checkbox" ng-model="todo.done"><span class="done{{todo.done}}">{{todo.text}}</span>',
-'        </label>',
-'      </li>',
-'    </ul>',
-'    <form ng-submit="addTodo()" class="form-inline">',
-'      <p>',
-'        <input type="text" ng-model="todoText" size="30" placeholder="add new todo here">',
-'        <input type="submit" value="add" class="btn btn-primary">',
-'      </p>',
-'    </form>',
-'  </div>',
-'</div>',''].join("\n"));
 }]);

@@ -20,5 +20,5 @@ div(ng-if="users.current._id != 0")
           {{picture.subtitle}}
       li.span3(ng-repeat="picture in Current.trainingset")
         .thumbnail
-          img(src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
+          img(ng-src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
           {{picture.subtitle}}

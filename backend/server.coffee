@@ -164,9 +164,12 @@ app.get '/users/:id/pictures', (req, res) ->
       count_rec = 0
       count_ts = 12
     async.series
+
       current: (cb) ->
         return cb null, {} unless req.query._id
-        Pictures.one req.query._id, cb
+        Pictures.one req.query._id, (err, picture) ->
+          picture = picture.replace /\.jpg$/, '_o.jpg'
+          cb err,
 
       recommendations: (cb) ->
         # dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'

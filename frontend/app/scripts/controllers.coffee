@@ -33,6 +33,8 @@ angular.module('app.controllers', [])
 
   # render new screen with updated feedback on user click event
   $scope.feedback = (_id) ->
+    $("#pictures-view").hide()
     postBody = _.extend $rootScope.Current, clicked:_id
-    Pictures.getPicsByFeedback postBody
+    Pictures.getPicsByFeedback postBody, (error, result) ->
+      $("#pictures-view").fadeIn()
 ])

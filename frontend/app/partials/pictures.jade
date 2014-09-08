@@ -1,7 +1,7 @@
 div(ng-if="users.current._id == 0")
   h3 Please choose a user !
 div(ng-if="users.current._id != 0")
-  div(ng-controller="PicturesCtrl")
+  div#pictures-view(ng-controller="PicturesCtrl")
     div(ng-if="Current.current.url")
       ul.thumbnails
         li.span12(ng-show="Current")

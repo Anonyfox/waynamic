@@ -48,7 +48,7 @@ angular.module('partials', [])
 '  <h3>Please choose a user !</h3>',
 '</div>',
 '<div ng-if="users.current._id != 0">',
-'  <div ng-controller="PicturesCtrl">',
+'  <div id="pictures-view" ng-controller="PicturesCtrl">',
 '    <div ng-if="Current.current.url">',
 '      <ul class="thumbnails">',
 '        <li ng-show="Current" class="span12">',

@@ -51,10 +51,13 @@ angular.module('app.controllers', []).controller('AppCtrl', [
     });
     return $scope.feedback = function(_id) {
       var postBody;
+      $("#pictures-view").hide();
       postBody = _.extend($rootScope.Current, {
         clicked: _id
       });
-      return Pictures.getPicsByFeedback(postBody);
+      return Pictures.getPicsByFeedback(postBody, function(error, result) {
+        return $("#pictures-view").fadeIn();
+      });
     };
   }
 ]);

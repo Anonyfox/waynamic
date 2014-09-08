@@ -53,7 +53,7 @@ user.interests = (req, res, next) ->
       metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
 
     req.interests = interests
-    console.log interests
+    #console.log interests
     next req, res
 
 # The Friends from a user: req.user as a Scatter
@@ -116,7 +116,7 @@ user.activities = (req, res, next) ->
       like.rating /= max
 
     req.activities = likes
-    console.log req.activities
+    #console.log req.activities
     next req, res
 
 

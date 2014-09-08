@@ -39,7 +39,7 @@ angular.module('app.controllers', []).controller('AppCtrl', [
     };
     return User.getAllUsers();
   }
-]).controller('PicturesCtrl', [
+]).controller('ProfileCtrl', ['$scope', 'User', function($scope, User) {}]).controller('PicturesCtrl', [
   '$scope', '$rootScope', 'Pictures', 'User', function($scope, $rootScope, Pictures, User) {
     if (!$rootScope.Current.list.length) {
       Pictures.getInitialPics();
@@ -111,6 +111,15 @@ angular.module('app.services', []).service("User", [
           return typeof fn === "function" ? fn(null, $rootScope.users.list) : void 0;
         }, function(data) {
           return typeof fn === "function" ? fn(null, []) : void 0;
+        });
+      },
+      getUserProfile: function(fn) {
+        return $http.get("/users/" + $rootScope.users.current._id + "/profile").then(function(data) {
+          $rootScope.current.friends = data.data.friends;
+          $rootScope.current.history = data.data.history;
+          return typeof fn === "function" ? fn(null, $rootScope.current) : void 0;
+        }, function(data) {
+          return typeof fn === "function" ? fn(null, {}) : void 0;
         });
       }
     };

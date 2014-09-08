@@ -22,6 +22,10 @@ angular.module('app.controllers', [])
   User.getAllUsers()
 ])
 
+.controller('ProfileCtrl', ['$scope', 'User', ($scope, User) ->
+
+])
+
 .controller('PicturesCtrl', ['$scope', '$rootScope', 'Pictures', 'User', ($scope, $rootScope, Pictures, User) ->
   # Start Screen
   Pictures.getInitialPics() unless $rootScope.Current.list.length

@@ -19,6 +19,14 @@ angular.module('app.services', [])
           fn? null, $rootScope.users.list
         (data) -> fn? null, []
       )
+    getUserProfile: (fn) ->
+      $http.get("/users/#{$rootScope.users.current._id}/profile").then(
+        (data) ->
+          $rootScope.current.friends = data.data.friends
+          $rootScope.current.history = data.data.history
+          fn? null, $rootScope.current
+        (data) -> fn? null, {}
+      )
   }
 ])
 

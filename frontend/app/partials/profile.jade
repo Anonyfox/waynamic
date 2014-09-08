@@ -1,2 +1,18 @@
-h1 awesome profile page here.
-h3 settings and stuff.
+div(ng-controller="ProfileCtrl")
+  h1 {{users.current.firstName}} {{users.current.lastName}}
+
+  hr
+
+  h3 Friends: {{17}}
+  ul: li(ng-repeat="friend in users.current.friends") {{friend.firstName}} {{friend.lastName}}
+
+  hr
+
+  h3 History:
+
+  .media(ng-repeat="m in users.current.history")
+    a.pull-left(href="#")
+      img.media-object(ng-src="{{m.url}}")
+    .media-body
+      h4.media-heading {{m.title}}
+      p clicked on {{m.updated}}

@@ -1,40 +1,15 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/import.html', [
-'',
-'<h1>mighty social networks import here.</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/landingpage.html', [
 '',
 '<h1>awesome landingpage here.</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/login.html', [
-'',
-'<div ng-controller="LoginCtrl">',
-'  <h1>User Login</h1>',
-'  <div class="row">',
-'    <div class="span3">Login as User with ID:</div>',
-'    <div class="span3">',
-'      <input type="text" ng-model="newUser.nodeId">',
-'    </div>',
-'    <div class="span1">',
-'      <button ng-click="loginNewUser()">Login</button>',
-'    </div>',
-'  </div>',
-'</div>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/logout.html', [
-'',
-'<h1>logout placeholder</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/nav.html', [
 '',
 '<ul class="nav">',
 '  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
+'  <li ng-class="getClass(\'/profile\')"><a ng-href="#/profile"><i class="fa fa-user"></i> Profile</a></li>',
 '</ul>',
 '<form class="navbar-form pull-right">',
 '  <select ng-model="selectedUser" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(selectedUser)">',
@@ -76,11 +51,20 @@ angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/profile.html', [
 '',
-'<h1>awesome profile page here.</h1>',
-'<h3>settings and stuff.</h3>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/register.html', [
-'',
-'<h1>registration page here</h1>',''].join("\n"));
+'<div ng-controller="ProfileCtrl">',
+'  <h1>{{users.current.firstName}} {{users.current.lastName}}</h1>',
+'  <hr>',
+'  <h3>Friends: {{17}}</h3>',
+'  <ul>',
+'    <li ng-repeat="friend in users.current.friends">{{friend.firstName}} {{friend.lastName}}</li>',
+'  </ul>',
+'  <hr>',
+'  <h3>History:</h3>',
+'  <div ng-repeat="m in users.current.history" class="media"><a href="#" class="pull-left"><img ng-src="{{m.url}}" class="media-object"></a>',
+'    <div class="media-body">',
+'      <h4 class="media-heading">{{m.title}}</h4>',
+'      <p>clicked on {{m.updated}}</p>',
+'    </div>',
+'  </div>',
+'</div>',''].join("\n"));
 }]);

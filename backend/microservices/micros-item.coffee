@@ -23,23 +23,21 @@ item.aggregate = (reqs, ress, next) ->
       index = _.sortedIndex recommendations, reco, 'prediction'
       if index <= count
         delete reco.item.rating
-        # Some Activity from diffrent friends (extreme content push)                        2
-        if recommendations[index]?.item._id is reco.item._id          # preemtive index: [1,2,3,4]
-          reco.prediction += recommendations[index].prediction        # recalculate prediction
-          recommendations.splice index, 1                             # delete old item
-          index = _.sortedIndex recommendations, reco, 'prediction'   # check new position           2
-        if recommendations[index-1]?.item._id is reco.item._id        # after preemptive indey: [1,2,3,4]
-          reco.prediction += recommendations[index-1].prediction      # recalculate prediction
-          recommendations.splice index-1, 1                           # delete old item
-          index = _.sortedIndex recommendations, reco, 'prediction' # check new position
-        # Add the friend information where the reco comes from
-        reco.friend =
-          _id: req.user
-          firstName: req.firstName
-          lastName: req.lastName
-        # Adjust Recommendations
-        recommendations.splice index, 0, reco
-        recommendations.splice(0,1) if recommendations.length > count # remove first element
+        # Some Activity from diffrent friends (extreme content push)
+        stop = false
+        _.each recommendations, (r) ->
+          if r.item._id is reco.item._id
+            r.prediction += reco.prediction        # recalculate prediction
+            stop = true
+        unless stop
+          # Add the friend information where the reco comes from
+          reco.friend =
+            _id: req.user
+            firstName: req.firstName
+            lastName: req.lastName
+          # Adjust Recommendations
+          recommendations.splice index, 0, reco
+          recommendations.splice(0,1) if recommendations.length > count # remove first element
 
   # Descending Order
   do recommendations.reverse

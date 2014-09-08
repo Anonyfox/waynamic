@@ -23,7 +23,7 @@ JSON.writeFileSync = (path, data) ->
 
 request = (url, parameters..., cb) ->
   url += '?' + querystring.stringify _.extend parameters...
-  console.log "GET #{url}"
+  # console.log "GET #{url}"
   https.get url, (res) ->
     data = ''
     res.on 'data', (chunk) -> data += chunk
@@ -137,10 +137,12 @@ MediaApi.Flickr = (api_key) ->
 
   Flickr.cache.add = (new_pics) ->
     pictures = do Flickr.cache.get_all
+    count = pictures.length
     new_pics = [new_pics] unless new_pics instanceof Array
     for new_pic in new_pics
       unless _.filter(pictures, (picture) -> picture.url is new_pic.url).length
         pictures.unshift _.pick new_pic, 'url', 'title', 'tags'
+    console.log "         added new to cache: #{pictures.length-count}"
     Flickr.cache.write_all pictures
 
   Flickr.cache.rm = (rm_urls) ->
@@ -165,11 +167,12 @@ MediaApi.Flickr = (api_key) ->
     opts.limit ?= 1
     opts.random = not opts.date?
     opts.date ?= new Date Date.now() - 1000*60*60*24 * parseInt(Math.random()*356)
-    get 'interestingness.getList', date:yyyymmdd(opts.date), per_page: 500, (err, result) ->
+    opts.date = yyyymmdd(opts.date)
+    get 'interestingness.getList', date:opts.date, per_page: 500, (err, result) ->
       return cb err if err
       return cb null, [] if result.stat isnt 'ok' or opts.limit is 0
       result.photos.photo = _.shuffle result.photos.photo if opts.random
-      collect err, result.photos.photo, opts.limit, cb
+      collect err, result.photos.photo, opts.limit, opts.date, cb
 
   Flickr.find = (opts, cb) ->
     opts.limit ?= 1
@@ -178,23 +181,29 @@ MediaApi.Flickr = (api_key) ->
     get 'photos.search', per_page:500, tag_mode: 'AND', tags:tags, (err, result) ->
       return cb err if err
       return cb null, [] if result.stat isnt 'ok' or opts.limit is 0
-      result.photos.photo = _.shuffle result.photos.photo if opts.random
-      collect err, result.photos.photo, opts.limit, cb
+      result.photos.photo = _.shuffle result.photos.photo
+      collect err, result.photos.photo, opts.limit, tags, cb
 
-  collect = (err, data, limit, cb) ->
+  collect = (err, data, limit, infostring, cb) ->
     pictures = []
+    crawled = 0
     add_one = ->
-      return cb null, pictures if data.length is 0
+      if data.length is 0
+        return cb null, pictures
+        console.log "         wanted: #{amount} | crawled: #{crawled} | returned: #{pictures.length}"
       id = (do data.shift).id
       crawl id, (err, picture) ->
+        crawled += 1
         return cb err if err
         filter picture, (err, picture) ->
           return do add_one if err
           pictures.push picture
-          return cb null, pictures if pictures.length is amount
+          if pictures.length is amount
+            console.log "         wanted: #{amount} | crawled: #{crawled} | returned: #{pictures.length}"
+            return cb null, pictures
     available = data.length
     amount = Math.min limit, available
-    console.log "pictures available: #{available}, limit: #{limit}"
+    console.log "pictures available: #{available} (#{infostring}) | limit: #{limit}"
     return cb null, [] if available is 0 or amount is 0
     async.times amount, add_one
 

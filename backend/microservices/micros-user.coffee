@@ -51,6 +51,7 @@ user.interests = (req, res, next) ->
         metatag
       metataglist = _.filter metataglist, (metatag) -> metatag.like > 0
       metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
+      metataglist = metataglist[0...50]
 
     req.interests = interests
     #console.log interests

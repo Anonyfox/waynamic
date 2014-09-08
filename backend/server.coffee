@@ -138,6 +138,8 @@ app.get '/users/:id/profile', (req, res) ->
   async.series
     history: (cb) ->
       Users.history req.params.id, 'Picture', cb
+    friends: (cb) ->
+      Users.friends req.params.id, cb
     , (err, all) ->
       res.json all
 

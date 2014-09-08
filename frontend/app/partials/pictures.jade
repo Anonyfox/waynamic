@@ -16,9 +16,9 @@ div(ng-if="users.current._id != -1")
     ul.thumbnails
       li.span3(ng-repeat="picture in Current.recommendations")
         .thumbnail
-          img(ng-src="picture.url", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
+          img(ng-src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
           {{picture.subtitle}}
       li.span3(ng-repeat="picture in Current.trainingset")
         .thumbnail
-          img(ng-src="picture.url", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
+          img(ng-src="{{picture.url}}", alt="", ng-click="feedback(picture._id)", style="cursor: pointer; height:195px; width:260px;")
           {{picture.subtitle}}

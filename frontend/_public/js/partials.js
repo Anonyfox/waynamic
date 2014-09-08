@@ -1,10 +1,5 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/landingpage.html', [
-'',
-'<h1>awesome landingpage here.</h1>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/nav.html', [
 '',
 '<ul class="nav">',
@@ -15,6 +10,11 @@ angular.module('partials', [])
 '  <select ng-model="users.current" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(users.current)">',
 '  </select>',
 '</form>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/landingpage.html', [
+'',
+'<h1>awesome landingpage here.</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
@@ -39,10 +39,10 @@ angular.module('partials', [])
 '    </div>',
 '    <ul class="thumbnails">',
 '      <li ng-repeat="picture in Current.recommendations" class="span3">',
-'        <div class="thumbnail"><img ng-src="picture.url" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
+'        <div class="thumbnail"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
 '      <li ng-repeat="picture in Current.trainingset" class="span3">',
-'        <div class="thumbnail"><img ng-src="picture.url" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
+'        <div class="thumbnail"><img ng-src="{{picture.url}}" alt="" ng-click="feedback(picture._id)" style="cursor: pointer; height:195px; width:260px;">{{picture.subtitle}}</div>',
 '      </li>',
 '    </ul>',
 '  </div>',

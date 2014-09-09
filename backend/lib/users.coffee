@@ -34,7 +34,7 @@ Users.history = (_id, type, cb) ->
     START User = node({userID})
     WHERE labels(User) = ['User']
     MATCH (User)-[like:`like`]->(Media:#{type})
-    RETURN Media.title AS title, Media.url AS url, like.updated AS updated
+    RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, like.updated AS updated
     ORDER BY updated DESC;
   """, userID:parseInt(_id), (err, result) ->
     result = _.map result, (r) -> r.url = r.url.replace /\.jpg$/, '_s.jpg'; r

@@ -19,7 +19,7 @@ item.aggregate = (reqs, ress, next) ->
   count = reqs[0].count
   for req in reqs
     for reco in req.recos
-      console.log reco, req.user
+      # console.log reco, req.user
       index = _.sortedIndex recommendations, reco, 'prediction'
       if index <= count
         delete reco.item.rating
@@ -42,7 +42,7 @@ item.aggregate = (reqs, ress, next) ->
   # Descending Order
   do recommendations.reverse
 
-  console.log recommendations
+  # console.log recommendations
   req = reqs[0]
   req.user = req.current_user
   delete req.firstName
@@ -50,6 +50,16 @@ item.aggregate = (reqs, ress, next) ->
   delete req.recos
 
   next req, recommendations
+
+item.format = (req, res, next) ->
+  res = _.map res, (r) ->
+    _id:r.item._id
+    url:r.item.url
+    subtitle:"#{r.friend.firstName} #{r.friend.lastName} mag dieses Bild"
+  console.log res
+  next req, res
+
+
 
 ms.$install item
 

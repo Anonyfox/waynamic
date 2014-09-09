@@ -98,12 +98,38 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
     MATCH (Usr)--(Tag:`dc:keyword`)--(Pic)
     RETURN Pic, Usr, Tag
 
+## lists - interest
+
     // interest list of one user
-    //START User=node(203468)
-    MATCH (User:User) WITH User LIMIT 1
+    START User=node(1)
+    //MATCH (User:User) WHERE rand() < 0.1 WITH User LIMIT 1
     MATCH (User)-[i:`foaf:interest`]->(metatag:`dc:keyword`)
     RETURN metatag.name AS metavalue, i.like AS likes, i.dislike AS dislikes
-    ORDER BY likes DESC;
+    ORDER BY likes DESC
+    LIMIT 100
+
+    // interest profile (not normalized)
+    START User=node(1)
+    //MATCH (User:User) WHERE rand() < 0.1 WITH User LIMIT 1
+    MATCH (User)-[i:`foaf:interest`]->(Metatag)
+    WHERE i.like > 0
+    WITH Metatag, i.like * i.like / (0.3*i.dislike + i.like) AS interests
+    ORDER BY interests DESC
+    RETURN labels(Metatag)[0] AS Metatagtype, Metatag.name AS Metatagname, interests AS interestlevel
+    LIMIT 100
+
+    // content based filtering
+    START User=node(1)
+    //MATCH (User:User) WHERE rand() < 0.1 WITH User LIMIT 1
+    MATCH (User)-[i:`foaf:interest`]->(Metatag)<--(Mediaitem:Picture)
+    WHERE not (User)-[:`like`]->(Mediaitem)
+          and i.like > 0
+    WITH DISTINCT Mediaitem, sum(i.like * i.like / (0.3*i.dislike + i.like)) AS interests
+    ORDER BY interests DESC
+    RETURN DISTINCT id(Mediaitem) AS _id, Mediaitem.url AS url, 'Passend zu Ihren Interessen' AS subtitle, interests AS interestlevel
+    LIMIT 100
+
+
 
 ## manipulation
 
@@ -119,7 +145,7 @@ run this commands in the [neo4j-browser](http://localhost:7474/browser/)
     DELETE r
 
     // 2. delete tags
-    MATCH ()-[r:`dc:keyword`]->(t:`dc:keyword`)
+    MATCH ()-[r:metatag]->(t:`dc:keyword`)
     DELETE r,t
 
     // 3. delete pictures

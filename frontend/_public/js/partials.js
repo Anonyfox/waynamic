@@ -1,5 +1,21 @@
 angular.module('partials', [])
 .run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/landingpage.html', [
+'<a ng-href="#/pictures"><img ng-src="img/logo.png" style="margin:auto"></a>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/partials/nav.html', [
+'',
+'<ul class="nav">',
+'  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
+'  <li ng-class="getClass(\'/profile\')"><a ng-href="#/profile"><i class="fa fa-user"></i> Profile</a></li>',
+'</ul>',
+'<form class="navbar-form pull-right">',
+'  <select ng-model="users.current" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(users.current)">',
+'  </select>',
+'</form>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/pictures.html', [
 '',
 '<div ng-if="users.current._id == -1">',
@@ -20,11 +36,6 @@ angular.module('partials', [])
 '    </ul>',
 '  </div>',
 '</div>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/landingpage.html', [
-'',
-'<h1>awesome landingpage here.</h1>',''].join("\n"));
 }])
 .run(['$templateCache', function($templateCache) {
   return $templateCache.put('/partials/profile.html', [
@@ -51,16 +62,4 @@ angular.module('partials', [])
 '    </div>',
 '  </div>',
 '</div>',''].join("\n"));
-}])
-.run(['$templateCache', function($templateCache) {
-  return $templateCache.put('/partials/nav.html', [
-'',
-'<ul class="nav">',
-'  <li ng-class="getClass(\'/pictures\')"><a ng-href="#/pictures"><i class="fa fa-picture-o"></i> Pictures</a></li>',
-'  <li ng-class="getClass(\'/profile\')"><a ng-href="#/profile"><i class="fa fa-user"></i> Profile</a></li>',
-'</ul>',
-'<form class="navbar-form pull-right">',
-'  <select ng-model="users.current" ng-options="u.name for u in users.list" ng-change="changeSelectedUser(users.current)">',
-'  </select>',
-'</form>',''].join("\n"));
 }]);

@@ -54,7 +54,7 @@ user.interests = (req, res, next) ->
       metataglist = metataglist[0...50]
       interests[metatype] = metataglist
     req.interests = interests
-    console.log interests
+    # console.log interests
     next req, res
 
 # The Friends from a user: req.user as a Scatter
@@ -92,9 +92,11 @@ user.sfriends = (req, res, next) ->
 # The Activities from a user: req.user
 user.activities = (req, res, next) ->
   db.query """
-    START User=node({friend}), Current=node({user})
-    MATCH (User)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)
-    WHERE not (Current)-[:`like`]->(Media)
+    START Friend=node({friend}), Current=node({user})
+    MATCH (Friend)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)<-[interest:`foaf:interest`]-(Current)
+    WHERE not (Current)-[:`like`]->(Media)  // only media not yet clicked
+          and interest.like > 0             // only metatags matching current's interests
+          and (Current)-[:`foaf:interest`]->()<-[:`dc:keyword`]-(Media)
     RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, collect(Metatag.name) AS metatags, like.rating AS rating, like.updated AS updated
     ORDER BY updated DESC
     LIMIT 100
@@ -104,7 +106,6 @@ user.activities = (req, res, next) ->
     #   { _id:238561, title:'Tranquil Misty Dawn', url:'https://farm6.staticflickr.com/5578/14180193348_00d924f364.jpg', metatags:[…], rating:1, updated:1410016227069},
     #   { _id:235797, title:'Transformación de Luz', url:'https://farm4.staticflickr.com/3845/14174050520_b662863b9c.jpg', metatags:[…], rating:1, updated:1410016225268}
     # ]
-    # only activities that hasnt been seen by current_user
 
     # weight by last visit date
     count = likes.length
@@ -117,7 +118,7 @@ user.activities = (req, res, next) ->
       like.rating /= max
 
     req.activities = likes
-    #console.log req.activities
+    # console.log req.activities
     next req, res
 
 

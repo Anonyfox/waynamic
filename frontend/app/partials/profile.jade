@@ -1,16 +1,19 @@
-div(ng-controller="ProfileCtrl")
-  h1.text-center {{users.current.name}}
+div(ng-if="users.current._id == -1")
+  h3 Please choose a user !
+div(ng-if="users.current._id != -1")
+  div(ng-controller="ProfileCtrl")
+    h1.text-center {{users.current.name}}
 
-  div.text-center(style="background: rgba(255,255,255,0.7); margin-bottom: 20px;")
-    h3 Friends: {{users.currentFriends.length}}
-    button.btn.btn-link(ng-click="switchUserTo(f._id)", ng-repeat="f in users.currentFriends", style="margin: 5px;")
-      <i class="fa fa-user"></i> {{f.firstName}} {{f.lastName}}
+    div.text-center(style="background: rgba(255,255,255,0.7); margin-bottom: 20px;")
+      h3 Friends: {{users.currentFriends.length}}
+      button.btn.btn-link(ng-click="switchUserTo(f._id)", ng-repeat="f in users.currentFriends", style="margin: 5px;")
+        <i class="fa fa-user"></i> {{f.firstName}} {{f.lastName}}
 
-  .row
-    .span4(ng-repeat="m in users.currentHistory")
-      .media(style="background: rgba(255,255,255,0.5); margin-bottom: 20px;")
-        a.pull-left
-          img.media-object(ng-src="{{m.url}}", style="height: 75px; width: 75px;")
-        .media-body
-          h4.media-heading {{m.title | shortText}}
-          p clicked on {{m.updated | date : 'shortDate'}}
+    .row
+      .span4(ng-repeat="m in users.currentHistory")
+        .media(style="background: rgba(255,255,255,0.5); margin-bottom: 20px;")
+          a.pull-left
+            img.media-object(ng-src="{{m.url}}", style="height: 75px; width: 75px;")
+          .media-body
+            h4.media-heading {{m.title | shortText}}
+            p clicked on {{m.updated | date : 'shortDate'}}

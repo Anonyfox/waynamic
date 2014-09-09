@@ -30,6 +30,7 @@ user.interests = (req, res, next) ->
     START User=node({userID})
     MATCH (User)-[i:`foaf:interest`]->(Metatag)
     WHERE (Metatag)<--(:#{req.type})
+      and i.like > 0
     RETURN labels(Metatag)[0] AS metatype, Metatag.name AS name, i.like AS like, i.dislike AS dislikes
     ORDER BY like DESC;
   """, userID:req.user, (err, result) ->
@@ -42,14 +43,13 @@ user.interests = (req, res, next) ->
         metatag.like /= max
         metatag.dislikes /= max
         # relevance dislikes - hard coded
-        metatag.dislikes *= 0.3
+        metatag.dislikes *= req.dislike_fac
         # combine like and disklike
         metatag.like = metatag.like * metatag.like / (metatag.like + metatag.dislikes)
         # sanitize
         delete metatag.metatype
         delete metatag.dislikes
         metatag
-      metataglist = _.filter metataglist, (metatag) -> metatag.like > 0
       metataglist = _.sortBy metataglist, (metatag) -> - metatag.like
       metataglist = metataglist[0...50]
       interests[metatype] = metataglist
@@ -108,10 +108,10 @@ user.activities = (req, res, next) ->
     # ]
 
     # weight by last visit date
-    count = likes.length
+    amount = likes.length
     max = 0
     for like, i in likes
-      like.rating *= 1.0*(count-i)/count
+      like.rating *= 1.0*(amount-i)/amount
       max = like.rating if like.rating > max
     # normalize
     for like in likes

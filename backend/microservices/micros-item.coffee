@@ -12,16 +12,16 @@ item = (req, res, next) ->
   console.log 'item'
   next req, res
 
-# Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count
+# Gather: req[]: ele.name, ele.id, ele.qc, (ele.link), req.count_sb
 # Aggregate each recommendation set to master list
 item.aggregate = (reqs, ress, next) ->
   recommendations = []
-  count = reqs[0].count
+  count_sb = reqs[0].count_sb
   for req in reqs
     for reco in req.recos
       # console.log reco, req.user
       index = _.sortedIndex recommendations, reco, 'prediction'
-      if index <= count
+      if index <= count_sb
         delete reco.item.rating
         # Some Activity from diffrent friends (extreme content push)
         stop = false
@@ -37,7 +37,7 @@ item.aggregate = (reqs, ress, next) ->
             lastName: req.lastName
           # Adjust Recommendations
           recommendations.splice index, 0, reco
-          recommendations.splice(0,1) if recommendations.length > count # remove first element
+          recommendations.splice(0,1) if recommendations.length > count_sb # remove first element
 
   # Descending Order
   do recommendations.reverse
@@ -52,6 +52,7 @@ item.aggregate = (reqs, ress, next) ->
   next req, recommendations
 
 item.format = (req, res, next) ->
+  res = [] unless res instanceof Array
   res = _.map res, (r) ->
     _id:r.item._id
     url:r.item.url

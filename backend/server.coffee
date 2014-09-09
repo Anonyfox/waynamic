@@ -167,34 +167,35 @@ app.post '/users/:id/pictures', (req, res) ->
 app.get '/users/:id/pictures', (req, res) ->
   Users.one req.params.id, (err, user) ->
     if user._id?
-      count_rec = 8
+      count_sb = 6 # social based
+      count_cb = 2 # content based (up to 8 if social based returns too little results)
       count_ts = 4
     else
-      count_rec = 0
+      count_sb = 0
+      count_cb = 0
       count_ts = 12
     async.series
-
       current: (cb) ->
         return cb null, {} unless req.query._id
         Pictures.one req.query._id, (err, picture) ->
           # picture.url = picture.url.replace /\.jpg$/, '_b.jpg'
           cb err, picture
-
       recommendations: (cb) ->
         # dummy = _id: -1, url: 'img/construction.png', subtitle: 'tuc vsr mag dieses Bild'
         # Start the MicroChain
-        if count_rec > 0
+        if count_sb > 0
           # Register Callback
           request = router.$register req, (recommendations) -> cb null, recommendations
           # Set request paramezers
           request.user = user._id                                 # id
           request.type = 'Picture'                                # Picture
-          request.count = count_rec                                # number of recommednations
+          request.count_sb = count_sb                             # number of social based recommednations
+          request.count_cb = count_cb                             # number of content based recommednations
           request.context = req.query._id if req.query.__dirname  # The recommendation context
+          request.dislike_fac = 0.3                               # weighting of dislikes in interestprofile
           # Start the chain with event loop
           setTimeout (-> router.$exec reco, request), 0
         else cb null, []
-
       trainingset: (cb) ->
         Pictures.random count_ts, (err, pictures) ->
           pictures = _.map pictures, (picture) -> _id:picture._id, url:picture.url, subtitle: 'weitere Empfehlungen von Flickr'

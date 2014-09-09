@@ -61,7 +61,7 @@ Pictures.add = (picture, cb) ->
       WHERE Picture.new = 1
       UNWIND {tags} AS tagname
         MERGE (Tag:`dc:keyword` {name: tagname})
-        MERGE (Picture)-[:`dc:keyword`]->(Tag)
+        MERGE (Picture)-[:metatag]->(Tag)
       REMOVE Picture.new
   """, _.pick( picture, 'url', 'title', 'tags' ), cb
 

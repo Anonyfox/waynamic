@@ -93,10 +93,10 @@ user.sfriends = (req, res, next) ->
 user.activities = (req, res, next) ->
   db.query """
     START Friend=node({friend}), Current=node({user})
-    MATCH (Friend)-[like:`like`]->(Media:#{req.type})-[:`dc:keyword`]->(Metatag)<-[interest:`foaf:interest`]-(Current)
+    MATCH (Friend)-[like:`like`]->(Media:#{req.type})-[:metatag]->(Metatag)<-[interest:`foaf:interest`]-(Current)
     WHERE not (Current)-[:`like`]->(Media)  // only media not yet clicked
           and interest.like > 0             // only metatags matching current's interests
-          and (Current)-[:`foaf:interest`]->()<-[:`dc:keyword`]-(Media)
+          and (Current)-[:`foaf:interest`]->()<-[:metatag]-(Media)
     RETURN id(Media) AS _id, Media.title AS title, Media.url AS url, collect(Metatag.name) AS metatags, like.rating AS rating, like.updated AS updated
     ORDER BY updated DESC
     LIMIT 100

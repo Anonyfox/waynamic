@@ -12,26 +12,28 @@ Pictures.all = (cb) ->
       Picture.url AS url,
       Picture.title AS title,
       collect(Tag.name) AS tags;
-    """, cb
+  """, cb
 
 Pictures.random = (limit, cb) ->
   db.query """
-    MATCH (Picture:Picture)
+    MATCH (Picture:Picture)<--(User:User)
+    WITH DISTINCT Picture, count(User) AS used
+    ORDER BY used ASC
+    LIMIT {prelimit}
     WITH Picture, rand() AS rand
+    ORDER BY rand
     MATCH (Picture)-->(Tag:`dc:keyword`)
     RETURN
       id(Picture) AS _id,
       Picture.url AS url,
       Picture.title AS title,
-      collect(Tag.name) AS tags,
-      rand
-    ORDER BY rand
+      collect(Tag.name) AS tags
     LIMIT {limit};
-    """, limit:limit, (err, pictures) ->
-      if err
-        console.log "ERROR in pictures.coffee Pictures.random: #{err.message}"
-        return cb null, {}
-      delete picture.rand for picture in pictures
+  """, limit:limit, prelimit:2*limit+100, (err, pictures) ->
+    if err
+      console.log "ERROR in pictures.coffee Pictures.random: #{err.message}"
+      return cb null, {}
+    else
       return cb err, pictures
 
 Pictures.one = (_id, cb) ->

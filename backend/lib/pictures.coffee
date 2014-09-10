@@ -16,7 +16,8 @@ Pictures.all = (cb) ->
 
 Pictures.random = (limit, cb) ->
   db.query """
-    MATCH (Picture:Picture)<--(User:User)
+    MATCH (Picture:Picture)
+    OPTIONAL MATCH (Picture:Picture)<--(User:User)
     WITH DISTINCT Picture, count(User) AS used
     ORDER BY used ASC
     LIMIT {prelimit}

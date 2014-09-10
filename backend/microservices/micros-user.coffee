@@ -42,7 +42,7 @@ user.interests = (req, res, next) ->
         # normalize by likes
         metatag.like /= max
         metatag.dislikes /= max
-        # relevance dislikes - hard coded
+        # relevance dislikes
         metatag.dislikes *= req.dislike_fac
         # combine like and disklike
         metatag.like = metatag.like * metatag.like / (metatag.like + metatag.dislikes)

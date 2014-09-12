@@ -23,6 +23,7 @@ git clone https://github.com/Anonyfox/waynamic
     * first keep shure to have installed jvm 1.7 or higher [wiki](https://github.com/Anonyfox/waynamic/wiki/installation-instructions)
     * `brew install neo4j` (on osx via [homebrew](http://brew.sh))
       or install it from [neo4j homepage](http://www.neo4j.org/download)
+      (requires at least version 2.1.3)
     * `neo4j install` (initial)
 
 * start
